@@ -105,7 +105,7 @@ angular.module('srcApp')
 	  .catch(
 	    function(cause){
 	      debugger; // jshint ignore: line
-	      console.log('Cannot authenticate with Keystone');
+	      console.log('Cannot authenticate with Keystone: ' + cause);
 	      return $q.reject(cause);
 	    });
       };
@@ -125,7 +125,7 @@ angular.module('srcApp')
 	    .catch(
 	      function(cause){
 		if ('message' in cause && cause.message === '503 Error' && counter < 3) {
-		  console.warn('getimagedetail unavailable, retrying: counter=' + counter);
+		  console.warn('getimagedetail unavailable, retrying: counter=' + counter + '; ' + cause);
 		  return sub(counter + 1, imageId); 
 		}
 		console.warn('getimagedetail error !');
@@ -223,6 +223,30 @@ angular.module('srcApp')
 	return deferred.promise;
       };
 
+      var getSecurityGroupList = function(){
+	var deferred = $q.defer();
+	JSTACK.Nova.getsecuritygrouplist(deferred.resolve, deferred.reject, 'Lannion');
+	return deferred.promise;	
+      };
+
+      var createSecurityGroup = function(name){
+	var deferred = $q.defer();
+	JSTACK.Nova.createsecuritygroup(name, 'Created bu the DHub application', deferred.resolve, deferred.reject, 'Lannion');
+	return deferred.promise;	
+      };
+      
+      var getSecurityGroupDetail = function(securityGroupId){
+	var deferred = $q.defer();
+	JSTACK.Nova.getsecuritygroupdetail(securityGroupId, deferred.resolve, deferred.reject, 'Lannion');
+	return deferred.promise;	
+      };
+
+      var createSecurityGroupRule = function(ipProtocol, fromPort, toPort, cidr, groupId){
+	var deferred = $q.defer();
+	JSTACK.Nova.createsecuritygrouprule(ipProtocol, fromPort, toPort, cidr, null, groupId, deferred.resolve, deferred.reject, 'Lannion');
+	return deferred.promise;	
+      };
+
 
       return {
 	createName: createName,
@@ -237,7 +261,11 @@ angular.module('srcApp')
 	getSubNetworksList: getSubNetworksList,
 	createSubNetwork: createSubNetwork,
 	getRoutersList: getRoutersList,
-	createRouter: createRouter
+	createRouter: createRouter,
+	getSecurityGroupList: getSecurityGroupList,
+	createSecurityGroup: createSecurityGroup,
+	getSecurityGroupDetail: getSecurityGroupDetail,
+	createSecurityGroupRule: createSecurityGroupRule
       };
     }
   );

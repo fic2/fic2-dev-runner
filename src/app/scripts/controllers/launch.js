@@ -76,7 +76,6 @@ angular.module('srcApp')
 	  .catch(
 	    function(){
 	      console.warn('Public sub network not found, creating a new one');
-	      debugger; // jshint ignore: line
 	      return os.createSubNetwork(publicNetworkData.id, name, $scope.tenantData.id);
 	    }
 	  );
@@ -110,6 +109,52 @@ angular.module('srcApp')
 	  );
       };
 
+      var getOrCreateSecurityGroup = function(){
+	var name = os.createName('sec_group');
+	return os.getSecurityGroupList()
+	  .then(function(securityGroupsData){return securityGroupsData.security_groups;})
+	  .then(os.getByNameFactory(name))
+	  .catch(
+	    function(){
+	      console.warn('The security group was not found, creating a new one');
+	      return os.createSecurityGroup(name)
+		.then(function(data){return data.security_group;}); // when creating, the result is boxed
+	    }
+	  )
+	  .then(
+	    function(securityGroupData){
+	      debugger; // jshint ignore: line
+	      console.log('Security group id = ' + securityGroupData.id);
+	      return securityGroupData.id;
+	    })
+	  .then(os.getSecurityGroupDetail)
+	  .then(
+	    function(securityGroup){
+	      //debugger; // jshint ignore: line
+	      $scope.securityGroup = securityGroup.security_group;
+	      return securityGroup.security_group.id;
+	    }
+	  );
+      };
+
+      var addingSecurityGroupRules = function(groupId){
+	var ports = [80, 8080, 22, 443];
+	var promises = ports.map(
+	  function(port){
+	    return os.createSecurityGroupRule('TCP', port, port, '0.0.0.0/0', groupId)
+	      .catch(
+		function(cause){
+		  if ('message' in cause && cause.message === '404 Error') {
+		    console.info('Rules ' + port + ' already exists');
+		    return cause;
+		  }
+		  return $q.reject(cause);
+		}
+	      );
+	  }
+	);
+	return $q.all(promises);
+      };
 
       $scope.steps = [];
       ((wrap('Loading tenant information', os.loadTenant))(oauth_creds.access_token))
@@ -122,6 +167,8 @@ angular.module('srcApp')
         .then(wrap('Creating the public network', getOrCreatePublicNetwork))
 	.then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
 	.then(wrap('Creating the router', getOrCreateRouter))
+	.then(wrap('Creating the security group', getOrCreateSecurityGroup))
+	.then(wrap('Adding the security group\'s rules', addingSecurityGroupRules))
 	.catch(function(cause){
 		 console.error(cause);});
     });
