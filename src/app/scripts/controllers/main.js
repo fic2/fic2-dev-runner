@@ -1,4 +1,3 @@
-/* global JSTACK */
 /* jshint camelcase: false */
 
 
@@ -17,10 +16,9 @@ angular.module('srcApp')
     'MainCtrl',
     function ($scope, $q, $resource, AccessToken, Endpoint, APP_CONFIG, SES_CONFIG, loginRequired) {
       $scope.ses = SES_CONFIG.ses;
-
-      /*
       var oauth_creds = loginRequired;
-
+      $scope.oauth_creds = oauth_creds;
+      /*
       var loadTenant = function(oauth_access_token) {
 	var Tenants = $resource(APP_CONFIG['keystone-uri'] + '/v2.0/tenants', {}, { get: {method: 'GET', headers: { 'X-Auth-Token': oauth_access_token }}});
 	return Tenants.get().$promise

@@ -1,4 +1,3 @@
-/* global JSTACK */
 /* jshint camelcase: false */
 
 
@@ -27,29 +26,6 @@ angular.module('srcApp')
     function($scope, $q, $resource, $routeParams, APP_CONFIG, SES_CONFIG, loginRequired, os) {
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       var oauth_creds = loginRequired;
-
-      var wrap2 = function(text, wrapped_promise){
-	var step = {'class': 'active', 'status': '...', 'text': text};
-	$scope.steps.push(step);
-	var deferred = $q.defer();
-	return function(acc){
-	  wrapped_promise(acc)
-	    .then(
-	      function(value){
-		step['class'] = 'success';
-		step.status = 'ok';
-		return deferred.resolve(value);
-	      })
-	    .catch(
-	      function(cause){
-		step['class'] = 'warning';
-		step.status = 'error';
-		return deferred.reject(cause);
-	      });
-	  return deferred.promise;
-	};
-      };
-
 
       var wrap = function(text, wrapped_promise){
 	var step = {'class': 'active', 'status': '...', 'text': text};
@@ -100,7 +76,7 @@ angular.module('srcApp')
 	  .catch(
 	    function(){
 	      console.warn('Public sub network not found, creating a new one');
-	      debugger;
+	      debugger; // jshint ignore: line
 	      return os.createSubNetwork(publicNetworkData.id, name, $scope.tenantData.id);
 	    }
 	  );
@@ -123,8 +99,8 @@ angular.module('srcApp')
 	      return os.createRouter(name, APP_CONFIG['external-network-id'], $scope.tenantData.id)
 		.catch(
 		  function(cause){
-		    if ('message' in cause && cause.message == '409 Error'){
-		      $scope.failure = "You exceeded the limit of Floating IPs on the public network.";
+		    if ('message' in cause && cause.message === '409 Error'){
+		      $scope.failure = 'You exceeded the limit of Floating IPs on the public network. You need at least 1 available floating ip.';
 		      angular.element('#failure-dialog_button').trigger('click');
 		    }
 		    return $q.reject(cause);

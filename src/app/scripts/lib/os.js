@@ -1,4 +1,4 @@
-/* global JSTACK */
+/* global JSTACK, sjcl */
 /* jshint camelcase: false */
 
 
@@ -104,7 +104,7 @@ angular.module('srcApp')
 	  .then(function(accessData){changeEndpoints(APP_CONFIG['cloud-uri']); return accessData;})
 	  .catch(
 	    function(cause){
-	      debugger;
+	      debugger; // jshint ignore: line
 	      console.log('Cannot authenticate with Keystone');
 	      return $q.reject(cause);
 	    });
@@ -124,10 +124,9 @@ angular.module('srcApp')
 	  return deferred.promise
 	    .catch(
 	      function(cause){
-		if ('message' in cause && cause.message == "503 Error"
-		    && counter < 3) {
+		if ('message' in cause && cause.message === '503 Error' && counter < 3) {
 		  console.warn('getimagedetail unavailable, retrying: counter=' + counter);
-		  return _sub(counter + 1, imageId); 
+		  return sub(counter + 1, imageId); 
 		}
 		console.warn('getimagedetail error !');
 		return $q.reject(cause);
@@ -162,12 +161,12 @@ angular.module('srcApp')
       var getByNameFactory = function(name){
 	return function(elems){
 	  for(var index=0; index < elems.length; index++){
-	    if (name == elems[index].name) {
+	    if (name === elems[index].name) {
 	      return elems[index];
 	    }
 	  }
 	  console.log('getByNameFactory not found: name=' + name);
-	  return $q.reject("Not found");
+	  return $q.reject('Not found');
 	};
       };
 
@@ -192,7 +191,7 @@ angular.module('srcApp')
 	  var allocPools = [{'start': base + '.100', 'end': base + '.200'}];
 	  var deferred = $q.defer();
 	  JSTACK.Neutron.createsubnet(networkId, cidr, name, allocPools,
-				     tenantId, base + '.1', 4, true, ["8.8.8.8"],
+				     tenantId, base + '.1', 4, true, ['8.8.8.8'],
 				      null, deferred.resolve,
 				      deferred.reject, 'Lannion');
 	  return deferred.promise
