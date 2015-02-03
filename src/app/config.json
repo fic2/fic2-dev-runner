@@ -1,0 +1,19 @@
+{
+  "site": "https://account.lab.fiware.org",
+  "client-id": "1906",
+  "redirect-uri": "https://193.1.202.229",
+  "authorize-path": "/oauth2/authorize",
+  "scope": "public",
+  
+  "cloud-uri": "https://cloud.lab.fiware.org",
+  "keystone-uri": "https://cloud.lab.fiware.org/keystone",
+
+  "cors": [
+  ],
+
+  "external-network-id": "7b8beeaa-758f-4815-8559-c2a78f96b092",
+
+  "trash": [
+    "http://controller.xifi.imaginlab.fr:8774"
+  ]
+} 
