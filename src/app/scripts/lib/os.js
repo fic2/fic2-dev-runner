@@ -247,6 +247,14 @@ angular.module('srcApp')
 	return deferred.promise;	
       };
 
+      var createServer = function(name, imageId, securityGroupId, networkId){
+	var deferred = $q.defer();
+	var userData = '';
+	var flavorId = '2';
+	JSTACK.Nova.createserver(name, imageId, 2, '', userData, [securityGroupId], 1, 1, null, [{'uuid': networkId}], '', null, deferred.resolve, deferred.reject, 'Lannion');
+	return deferred.promise;
+      };
+
 
       return {
 	createName: createName,
@@ -265,7 +273,8 @@ angular.module('srcApp')
 	getSecurityGroupList: getSecurityGroupList,
 	createSecurityGroup: createSecurityGroup,
 	getSecurityGroupDetail: getSecurityGroupDetail,
-	createSecurityGroupRule: createSecurityGroupRule
+	createSecurityGroupRule: createSecurityGroupRule,
+	createServer: createServer
       };
     }
   );

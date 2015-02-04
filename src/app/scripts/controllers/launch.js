@@ -25,6 +25,7 @@ angular.module('srcApp')
     'LaunchCtrl',
     function($scope, $q, $resource, $routeParams, APP_CONFIG, SES_CONFIG, loginRequired, os) {
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
+      $scope.targetSeName = $routeParams.seKeyName;
       var oauth_creds = loginRequired;
 
       var wrap = function(text, wrapped_promise){
@@ -123,7 +124,6 @@ angular.module('srcApp')
 	  )
 	  .then(
 	    function(securityGroupData){
-	      debugger; // jshint ignore: line
 	      console.log('Security group id = ' + securityGroupData.id);
 	      return securityGroupData.id;
 	    })
@@ -156,6 +156,11 @@ angular.module('srcApp')
 	return $q.all(promises);
       };
 
+      var bootServer = function(){
+	var name = os.createName($scope.targetSeName + '__' + (new Date().getTime()));
+	return os.createServer(name, $scope.se.imageId, $scope.securityGroup.id, $scope.publicNetworkData.id);
+      };
+
       $scope.steps = [];
       ((wrap('Loading tenant information', os.loadTenant))(oauth_creds.access_token))
 	.then(wrap('Authentificating with Keystone', os.authenticateWithKeystone))
@@ -169,6 +174,7 @@ angular.module('srcApp')
 	.then(wrap('Creating the router', getOrCreateRouter))
 	.then(wrap('Creating the security group', getOrCreateSecurityGroup))
 	.then(wrap('Adding the security group\'s rules', addingSecurityGroupRules))
+	.then(wrap('Creating the server', bootServer))
 	.catch(function(cause){
 		 console.error(cause);});
     });
