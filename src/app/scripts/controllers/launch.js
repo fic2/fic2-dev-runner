@@ -26,6 +26,7 @@ angular.module('srcApp')
     function($scope, $q, $resource, $routeParams, APP_CONFIG, SES_CONFIG, loginRequired, os) {
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       $scope.targetSeName = $routeParams.seKeyName;
+      $scope.failure = 'An error occured';
       var oauth_creds = loginRequired;
 
       var wrap = function(text, wrapped_promise){
@@ -104,7 +105,7 @@ angular.module('srcApp')
 		  function(cause){
 		    if ('message' in cause && cause.message === '409 Error'){
 		      $scope.failure = 'You exceeded the limit of Floating IPs on the public network. You need at least 1 available floating ip.';
-		      angular.element('#failure-dialog_button').trigger('click');
+		      //angular.element('#failure-dialog_button').trigger('click');
 		    }
 		    return $q.reject(cause);
 		  }
@@ -175,7 +176,7 @@ angular.module('srcApp')
 
       var bootServer = function(){
 	var name = os.createName($scope.targetSeName + '__' + (new Date().getTime()));
-	return os.createServer(name, $scope.se.imageId, $scope.securityGroup.id, $scope.publicNetworkData.id)
+	return os.createServer(name, $scope.se.imageId, '#cloud-config', $scope.securityGroup.id, $scope.publicNetworkData.id)
 	  .then(
 	    function(serverData){
 	      console.info('Server created: ' + serverData);
@@ -200,6 +201,9 @@ angular.module('srcApp')
 	.then(wrap('Creating the security group', getOrCreateSecurityGroup))
 	.then(wrap('Adding the security group\'s rules', addingSecurityGroupRules))
 	.then(wrap('Creating the server', bootServer))
-	.catch(function(cause){
-		 console.error(cause);});
+	.catch(
+	  function(cause){
+	    angular.element('#failure-dialog_button').trigger('click');
+	    console.error(cause);
+	  });
     });
