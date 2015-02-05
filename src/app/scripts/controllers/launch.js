@@ -18,7 +18,7 @@ angular.module('srcApp')
       return {
 	restrict: 'A',
 	scope: true,
-	template: '<div class="alert alert-dismissable alert-danger"><strong>{{failure}}</strong></div>'
+	template: '<div class="alert alert-dismissable alert-danger"><strong>{{failure}}</strong><p>{{cause}}</p></div>'
       };
     })
   .controller(
@@ -179,21 +179,104 @@ angular.module('srcApp')
 	return os.createServer(name, $scope.se.imageId, '#cloud-config', $scope.securityGroup.id, $scope.publicNetworkData.id)
 	  .then(
 	    function(serverData){
-	      console.info('Server created: ' + serverData);
+	      console.info('Server created: ' + JSON.stringify(serverData));
 	      $scope.serverData = serverData;
 	      return serverData;
 	    }
 	  );
       };
 
+      
+      var retries = function(promise, max){
+	var tmp = promise();
+	for (var index=1; index <= max; index++) {
+	  tmp = tmp
+	    .then(function(result){return result;})
+	    .catch(
+	      function() {
+		return promise();		
+	      }
+	    );
+	}
+	return tmp;
+      };
+      
+      var getOrAllocateFloatingIp = function(){
+	var max = 3;
+	var getFloatingIps = function(){
+	  return os.getFloatingIps()
+	    .then(
+	      function(floatingIpsData) {
+		return floatingIpsData.floating_ips;
+	      })
+	    .catch(function(){ $scope.failure='A problem occured when reaching the floating ip\'s endpoint; perhaps the pool is misconfigured.'; });
+	};
+	var allocateFloatingIps = function(){
+	  return os.allocateFloatingIp(APP_CONFIG['external-network-id'])
+	    .then(
+	      function(floatingIpData){
+		$scope.floatingIp = floatingIpData.floating_ip;
+		return $scope.floatingIp; // .instance_id .pool: "ext-net"
+	      })
+	    .catch(
+	      function(cause) {
+		if ('message' in cause && cause.message === '500 Error') {
+		  $scope.failure = 'Impossibility to find or create a free floating ip.';
+		}
+		return $q.reject(cause);
+	      }
+	    );
+	};
+	return retries(getFloatingIps, max)
+	  .catch(
+	    function(cause) {
+	      $scope.failure = 'Unable to reach the floating ip endpoint';
+	      return $q.reject(cause);
+	    })
+	  .then(
+	    function(floatingIps) {
+	      for (var index = 0; index < floatingIps.length; index++){
+		var current = floatingIps[index];
+		if (current.pool === $scope.externalNetworkData.name && !current.instance_id) {
+		  return current;
+		}
+	      }
+	      return $q.reject('Not found');
+	    })
+	  .catch(
+	    function(cause) {
+	      return retries(allocateFloatingIps, max);
+	    }
+	  );
+      };
+
+      var getAndSaveExternalNetwork = function() {
+	return os.getNetworkDetail(APP_CONFIG['external-network-id'])
+	  .then(
+	    function(externalNetworkData) {
+	      $scope.externalNetworkData = externalNetworkData;
+	    }
+	  );
+      };
+      
       $scope.steps = [];
       ((wrap('Loading tenant information', os.loadTenant))(oauth_creds.access_token))
 	.then(wrap('Authentificating with Keystone', os.authenticateWithKeystone))
 	.then(function(accessData){
 		$scope.tenantData = accessData.access.token.tenant; return null;})
+	.then(wrap('Verifying the external network existence', getAndSaveExternalNetwork))
 	.then(function(){
 		return $scope.se.imageId;})
-	.then(wrap('Checking the image existence', os.getImageDetails)) // 404 not found
+	.then(wrap('Checking the image existence', os.getImageDetails))
+	.catch(
+	  function(cause) {
+	    if ('message' in cause && cause.message === '404 Error') {
+	      $scope.failure = 'The SE\'s image is missing.';
+	    }
+	    return $q.reject(cause);
+	  }
+	)// 404 not found
+	//.then(wrap('Finding or allocating a floating ip', getOrAllocateFloatingIp))
         .then(wrap('Creating the public network', getOrCreatePublicNetwork))
 	.then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
 	.then(wrap('Creating the router', getOrCreateRouter))
@@ -203,6 +286,7 @@ angular.module('srcApp')
 	.then(wrap('Creating the server', bootServer))
 	.catch(
 	  function(cause){
+	    $scope.cause = cause;
 	    angular.element('#failure-dialog_button').trigger('click');
 	    console.error(cause);
 	  });

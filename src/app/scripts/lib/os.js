@@ -92,8 +92,8 @@ angular.module('srcApp')
 	    })
 	  .catch(
 	    function(cause){
-	      console.error('Cannot retrieve tenant: ' + cause);
-	      return $q.reject(cause);
+	      var msg = 'Cannot retrieve tenant: ' + JSON.stringify(cause);
+	      return $q.reject(msg);
 	    });
       };
 
@@ -146,6 +146,12 @@ angular.module('srcApp')
       var getNetworksList = function(){
 	var deferred = $q.defer();
 	JSTACK.Neutron.getnetworkslist(deferred.resolve, deferred.reject, region);
+	return deferred.promise;
+      };
+
+      var getNetworkDetail = function(networkId) {
+	var deferred = $q.defer();
+	JSTACK.Neutron.getnetworkdetail(networkId, deferred.resolve, deferred.reject, region);
 	return deferred.promise;
       };
 
@@ -268,6 +274,18 @@ angular.module('srcApp')
 	return deferred.promise;
       };
 
+      var getFloatingIps = function(){
+	var deferred = $q.defer();
+	JSTACK.Nova.getfloatingIPs(deferred.resolve, deferred.reject, region);
+	return deferred.promise;
+      };
+
+      var allocateFloatingIp = function(pool){
+	var deferred = $q.defer();
+	JSTACK.Nova.allocatefloatingIP(pool, deferred.resolve, deferred.reject, region);
+	return deferred.promise;
+      };
+
 
       return {
 	createName: createName,
@@ -277,6 +295,7 @@ angular.module('srcApp')
 	getImageDetails: getImageDetails,
 	getNetworksList: getNetworksList,
 	//getNetworkByName: getNetworkByName,
+	getNetworkDetail: getNetworkDetail,
 	getByNameFactory: getByNameFactory,
 	createNetwork: createNetwork,
 	getSubNetworksList: getSubNetworksList,
@@ -288,7 +307,9 @@ angular.module('srcApp')
 	getSecurityGroupDetail: getSecurityGroupDetail,
 	createSecurityGroupRule: createSecurityGroupRule,
 	createServer: createServer,
-	addInterfaceToRouter: addInterfaceToRouter
+	addInterfaceToRouter: addInterfaceToRouter,
+	getFloatingIps: getFloatingIps,
+	allocateFloatingIp: allocateFloatingIp
       };
     }
   );
