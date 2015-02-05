@@ -60,24 +60,26 @@ angular.module('srcApp')
 	  .catch(
 	    function(){
 	      console.warn('Public network not found, creating a new one');
-	      return os.createNetwork(name, $scope.tenantData.id); 
+	      return os.createNetwork(name, $scope.tenantData.id)
+		.then(getOrCreatePublicNetwork);
 	    });
       };
 
       var getOrCreatePublicSubNetwork = function(publicNetworkData) {
 	var name = os.createName('private_sub_network');
+	var register = function(publicSubNetworkData){
+	  $scope.publicSubNetworkData = publicSubNetworkData;
+	  return null;
+	};
 	return os.getSubNetworksList()
 	  .then(function(data){return data.subnets;})
 	  .then(os.getByNameFactory(name))
-	  .then(
-	    function(publicSubNetworkData){
-	      $scope.publicSubNetworkData = publicSubNetworkData;
-	      return null;
-	    })
+	  .then(register)
 	  .catch(
 	    function(){
 	      console.warn('Public sub network not found, creating a new one');
-	      return os.createSubNetwork(publicNetworkData.id, name, $scope.tenantData.id);
+	      return os.createSubNetwork(publicNetworkData.id, name, $scope.tenantData.id)
+		.then(function(data){return register(data.subnet);});
 	    }
 	  );
       };
@@ -97,6 +99,7 @@ angular.module('srcApp')
 	    function(){
 	      console.warn('Router was not found, creating a new one');
 	      return os.createRouter(name, APP_CONFIG['external-network-id'], $scope.tenantData.id)
+		.then(function(data){ $scope.routerData = data.router; return null;})
 		.catch(
 		  function(cause){
 		    if ('message' in cause && cause.message === '409 Error'){
@@ -106,6 +109,20 @@ angular.module('srcApp')
 		    return $q.reject(cause);
 		  }
 		);
+	    }
+	  );
+      };
+
+      var bindRouterToSubnet = function(){
+	//debugger; // jshint ignore: line
+	return os.addInterfaceToRouter($scope.routerData.id, $scope.publicSubNetworkData.id)
+	  .catch(
+	    function(cause){
+	      if ('message' in cause && cause.message === '400 Error') {
+		console.info('The router is already attached to the subnet.');
+		return null;
+	      }
+	      return $q.reject(cause);
 	    }
 	  );
       };
@@ -158,7 +175,14 @@ angular.module('srcApp')
 
       var bootServer = function(){
 	var name = os.createName($scope.targetSeName + '__' + (new Date().getTime()));
-	return os.createServer(name, $scope.se.imageId, $scope.securityGroup.id, $scope.publicNetworkData.id);
+	return os.createServer(name, $scope.se.imageId, $scope.securityGroup.id, $scope.publicNetworkData.id)
+	  .then(
+	    function(serverData){
+	      console.info('Server created: ' + serverData);
+	      $scope.serverData = serverData;
+	      return serverData;
+	    }
+	  );
       };
 
       $scope.steps = [];
@@ -172,6 +196,7 @@ angular.module('srcApp')
         .then(wrap('Creating the public network', getOrCreatePublicNetwork))
 	.then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
 	.then(wrap('Creating the router', getOrCreateRouter))
+	.then(wrap('Attach router to subnet', bindRouterToSubnet))
 	.then(wrap('Creating the security group', getOrCreateSecurityGroup))
 	.then(wrap('Adding the security group\'s rules', addingSecurityGroupRules))
 	.then(wrap('Creating the server', bootServer))

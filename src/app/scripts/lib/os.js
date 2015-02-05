@@ -10,6 +10,7 @@ angular.module('srcApp')
     'os',
     function($q, $resource, AccessToken, Endpoint, APP_CONFIG) {
       var oauth_creds = AccessToken.get();
+      var region = 'Lannion';
 
       if (! (!!oauth_creds)) {
 	return Endpoint.redirect();
@@ -97,22 +98,28 @@ angular.module('srcApp')
       };
 
       var authenticateWithKeystone = function(tenant_data){
-	var deferred = $q.defer();
 	JSTACK.Keystone.init(APP_CONFIG['keystone-uri'] + '/v2.0/');
-	JSTACK.Keystone.authenticate(null, null, oauth_creds.access_token, tenant_data.id, deferred.resolve, deferred.reject);
-	return deferred.promise
-	  .then(function(accessData){changeEndpoints(APP_CONFIG['cloud-uri']); return accessData;})
-	  .catch(
-	    function(cause){
-	      debugger; // jshint ignore: line
-	      console.log('Cannot authenticate with Keystone: ' + cause);
-	      return $q.reject(cause);
-	    });
+	var sub = function(counter) {
+	  var deferred = $q.defer();
+	  JSTACK.Keystone.authenticate(null, null, oauth_creds.access_token, tenant_data.id, deferred.resolve, deferred.reject);
+	  return deferred.promise
+	    .then(function(accessData){changeEndpoints(APP_CONFIG['cloud-uri']); return accessData;})
+	    .catch(
+	      function(cause){
+		//debugger; // jshint ignore: line
+		console.log('Cannot authenticate with Keystone counter=' + counter + ' : ' + cause);
+		if ('message' in cause && cause.message === '503 Error' && counter < 4) {
+		  return sub(counter + 1);
+		}
+		return $q.reject(cause);
+	      });	  
+	};
+	return sub(0);
       };
 
       var fetchNovaServers = function(){
 	var deferred = $q.defer();
-	JSTACK.Nova.getserverlist(true, false, deferred.resolve, deferred.reject, 'Lannion');
+	JSTACK.Nova.getserverlist(true, false, deferred.resolve, deferred.reject, region);
 	return deferred.promise
 	  .then(function(servers_data){console.log(servers_data);});
       };
@@ -120,7 +127,7 @@ angular.module('srcApp')
       var getImageDetails = function(imageId){
 	var sub = function(counter, imageId){
 	  var deferred = $q.defer();
-	  JSTACK.Nova.getimagedetail(imageId, deferred.resolve, deferred.reject, 'Lannion');
+	  JSTACK.Nova.getimagedetail(imageId, deferred.resolve, deferred.reject, region);
 	  return deferred.promise
 	    .catch(
 	      function(cause){
@@ -138,7 +145,7 @@ angular.module('srcApp')
 
       var getNetworksList = function(){
 	var deferred = $q.defer();
-	JSTACK.Neutron.getnetworkslist(deferred.resolve, deferred.reject, 'Lannion');
+	JSTACK.Neutron.getnetworkslist(deferred.resolve, deferred.reject, region);
 	return deferred.promise;
       };
 
@@ -172,13 +179,13 @@ angular.module('srcApp')
 
       var createNetwork = function(name, tenantId){
 	var deferred = $q.defer();
-	JSTACK.Neutron.createnetwork(name, true, false, tenantId, deferred.resolve, deferred.reject, 'Lannion');
+	JSTACK.Neutron.createnetwork(name, true, false, tenantId, deferred.resolve, deferred.reject, region);
 	return deferred.promise;
       };
 
       var getSubNetworksList = function(){
 	var deferred = $q.defer();
-	JSTACK.Neutron.getsubnetslist(deferred.resolve, deferred.reject, 'Lannion');
+	JSTACK.Neutron.getsubnetslist(deferred.resolve, deferred.reject, region);
 	return deferred.promise;
       };
 
@@ -193,7 +200,7 @@ angular.module('srcApp')
 	  JSTACK.Neutron.createsubnet(networkId, cidr, name, allocPools,
 				     tenantId, base + '.1', 4, true, ['8.8.8.8'],
 				      null, deferred.resolve,
-				      deferred.reject, 'Lannion');
+				      deferred.reject, region);
 	  return deferred.promise
 	    .catch(
 	      function(cause){
@@ -213,37 +220,37 @@ angular.module('srcApp')
 
       var createRouter = function(name, externalNetworkId, tenantId){
 	var deferred = $q.defer();
-	JSTACK.Neutron.createrouter(name, true, externalNetworkId, tenantId, deferred.resolve, deferred.reject, 'Lannion');
+	JSTACK.Neutron.createrouter(name, true, externalNetworkId, tenantId, deferred.resolve, deferred.reject, region);
 	return deferred.promise;
       };
 
       var getRoutersList = function(){
 	var deferred = $q.defer();
-	JSTACK.Neutron.getrouterslist(deferred.resolve, deferred.reject, 'Lannion');
+	JSTACK.Neutron.getrouterslist(deferred.resolve, deferred.reject, region);
 	return deferred.promise;
       };
 
       var getSecurityGroupList = function(){
 	var deferred = $q.defer();
-	JSTACK.Nova.getsecuritygrouplist(deferred.resolve, deferred.reject, 'Lannion');
+	JSTACK.Nova.getsecuritygrouplist(deferred.resolve, deferred.reject, region);
 	return deferred.promise;	
       };
 
       var createSecurityGroup = function(name){
 	var deferred = $q.defer();
-	JSTACK.Nova.createsecuritygroup(name, 'Created bu the DHub application', deferred.resolve, deferred.reject, 'Lannion');
+	JSTACK.Nova.createsecuritygroup(name, 'Created by the DHub application', deferred.resolve, deferred.reject, region);
 	return deferred.promise;	
       };
       
       var getSecurityGroupDetail = function(securityGroupId){
 	var deferred = $q.defer();
-	JSTACK.Nova.getsecuritygroupdetail(securityGroupId, deferred.resolve, deferred.reject, 'Lannion');
+	JSTACK.Nova.getsecuritygroupdetail(securityGroupId, deferred.resolve, deferred.reject, region);
 	return deferred.promise;	
       };
 
       var createSecurityGroupRule = function(ipProtocol, fromPort, toPort, cidr, groupId){
 	var deferred = $q.defer();
-	JSTACK.Nova.createsecuritygrouprule(ipProtocol, fromPort, toPort, cidr, null, groupId, deferred.resolve, deferred.reject, 'Lannion');
+	JSTACK.Nova.createsecuritygrouprule(ipProtocol, fromPort, toPort, cidr, null, groupId, deferred.resolve, deferred.reject, region);
 	return deferred.promise;	
       };
 
@@ -251,7 +258,14 @@ angular.module('srcApp')
 	var deferred = $q.defer();
 	var userData = '';
 	var flavorId = '2';
-	JSTACK.Nova.createserver(name, imageId, 2, '', userData, [securityGroupId], 1, 1, null, [{'uuid': networkId}], '', null, deferred.resolve, deferred.reject, 'Lannion');
+	JSTACK.Nova.createserver(name, imageId, 2, '', userData, [securityGroupId], 1, 1, null, [{'uuid': networkId}], '', null, deferred.resolve, deferred.reject, region);
+	return deferred.promise;
+      };
+      
+      var addInterfaceToRouter = function(routerId, subnetId){
+	var deferred = $q.defer();
+	var undf;
+	JSTACK.Neutron.addinterfacetorouter(routerId, subnetId, undf, deferred.resolve, deferred.reject, region);
 	return deferred.promise;
       };
 
@@ -274,7 +288,8 @@ angular.module('srcApp')
 	createSecurityGroup: createSecurityGroup,
 	getSecurityGroupDetail: getSecurityGroupDetail,
 	createSecurityGroupRule: createSecurityGroupRule,
-	createServer: createServer
+	createServer: createServer,
+	addInterfaceToRouter: addInterfaceToRouter
       };
     }
   );

@@ -1,6 +1,7 @@
 {
   "ses": {
     "ppnet": {
+      "old_imageId": "47037006-e487-4fa6-8db0-eff79c596b7b",
       "imageId": "23861c3c-8e5f-485f-9aa8-977963e3c637",
       "displayName": "Social Network SE Core",
       "description": "This service can be used to create a social network, either temporarily or permanently for a group of users."
