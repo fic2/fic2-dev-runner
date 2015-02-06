@@ -11,6 +11,7 @@
   "cors": [
   ],
 
+  "shared-network-id": "7edf4710-70d1-47dc-bac5-387c46f2bcfa",
   "external-network-id": "7b8beeaa-758f-4815-8559-c2a78f96b092",
   "old_external-network-id": "c02a7883-ff90-4e3d-9f10-fdf2d2c0025e",
 

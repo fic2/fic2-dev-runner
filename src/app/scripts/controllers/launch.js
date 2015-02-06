@@ -180,11 +180,12 @@ angular.module('srcApp')
 	  .then(
 	    function(serverData){
 	      console.info('Server created: ' + JSON.stringify(serverData));
-	      $scope.serverData = serverData;
-	      return serverData;
+	      $scope.serverData = serverData.server;
+	      return serverData.server;
 	    }
 	  );
       };
+
 
       
       var retries = function(promise, max){
@@ -238,6 +239,7 @@ angular.module('srcApp')
 	      for (var index = 0; index < floatingIps.length; index++){
 		var current = floatingIps[index];
 		if (current.pool === $scope.externalNetworkData.name && !current.instance_id) {
+		  $scope.floatingIp = current;
 		  return current;
 		}
 	      }
@@ -258,6 +260,33 @@ angular.module('srcApp')
 	    }
 	  );
       };
+
+      var tryToAssociateIp = function() {
+	debugger; // jshint ignore: line
+	var sub = function() {
+	  return os.associateFloatingIp($scope.serverData.id, $scope.floatingIp.ip);
+	};
+	return retries(sub, 3);
+      };
+
+
+     var getSharedPublicNetwork = function() {
+       var targetId = APP_CONFIG['shared-network-id'];
+       return os.getNetworkDetail(targetId)
+	 .then(
+	   function(networkData) {
+	     $scope.publicNetworkData = networkData;
+	     return networkData;
+	   }
+	 )
+	 .catch(
+	   function(cause){
+	     var msg = 'The shared network "' + targetId + '" used by the instance was not found. Perhaps the DHub service is misconfigured.';
+	     console.error(msg);
+	     $scope.failure = msg;
+	     return $q.reject(cause);	     
+	   });
+     };
       
       $scope.steps = [];
       ((wrap('Loading tenant information', os.loadTenant))(oauth_creds.access_token))
@@ -270,20 +299,22 @@ angular.module('srcApp')
 	.then(wrap('Checking the image existence', os.getImageDetails))
 	.catch(
 	  function(cause) {
-	    if ('message' in cause && cause.message === '404 Error') {
+	    if (typeof cause === 'object' && 'message' in cause && cause.message === '404 Error') {
 	      $scope.failure = 'The SE\'s image is missing.';
 	    }
 	    return $q.reject(cause);
 	  }
 	)// 404 not found
-	//.then(wrap('Finding or allocating a floating ip', getOrAllocateFloatingIp))
-        .then(wrap('Creating the public network', getOrCreatePublicNetwork))
-	.then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
-	.then(wrap('Creating the router', getOrCreateRouter))
-	.then(wrap('Attach router to subnet', bindRouterToSubnet))
+	.then(wrap('Finding or allocating a floating ip', getOrAllocateFloatingIp))
+        //.then(wrap('Creating the public network', getOrCreatePublicNetwork))
+	//.then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
+	//.then(wrap('Creating the router', getOrCreateRouter))
+	//.then(wrap('Attach router to subnet', bindRouterToSubnet))
+	.then(wrap('Fetch the network', getSharedPublicNetwork))
 	.then(wrap('Creating the security group', getOrCreateSecurityGroup))
 	.then(wrap('Adding the security group\'s rules', addingSecurityGroupRules))
 	.then(wrap('Creating the server', bootServer))
+	.then(wrap('Associate the floating ip to the newly created instance', tryToAssociateIp))
 	.catch(
 	  function(cause){
 	    $scope.cause = cause;

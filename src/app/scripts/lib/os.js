@@ -286,6 +286,12 @@ angular.module('srcApp')
 	return deferred.promise;
       };
 
+      var associateFloatingIp = function(serverId, address){
+	var deferred = $q.defer();
+	JSTACK.Nova.associatefloatingIP(serverId, address, null, deferred.resolve, deferred.reject, region);
+	return deferred.promise;
+      };
+ 
 
       return {
 	createName: createName,
@@ -309,7 +315,8 @@ angular.module('srcApp')
 	createServer: createServer,
 	addInterfaceToRouter: addInterfaceToRouter,
 	getFloatingIps: getFloatingIps,
-	allocateFloatingIp: allocateFloatingIp
+	allocateFloatingIp: allocateFloatingIp,
+	associateFloatingIp: associateFloatingIp
       };
     }
   );
