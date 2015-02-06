@@ -1,3 +1,4 @@
+/* global sjcl */
 /* jshint camelcase: false */
 
 
@@ -12,6 +13,17 @@
  * Controller of the srcApp
  */
 angular.module('srcApp')
+  .factory(
+    'kcSleep',
+    function($timeout) {
+      return function(ms) {
+	return function(value) {
+	  return $timeout(function() {
+			    return value;
+			  }, ms);
+	};
+      };
+    })
   .directive(
     'ngFailure',
     function() {
@@ -23,7 +35,7 @@ angular.module('srcApp')
     })
   .controller(
     'LaunchCtrl',
-    function($scope, $q, $resource, $routeParams, APP_CONFIG, SES_CONFIG, loginRequired, os) {
+    function($scope, $q, $resource, $routeParams, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep) {
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       $scope.targetSeName = $routeParams.seKeyName;
       $scope.failure = 'An error occured';
@@ -176,7 +188,17 @@ angular.module('srcApp')
 
       var bootServer = function(){
 	var name = os.createName($scope.targetSeName + '__' + (new Date().getTime()));
-	return os.createServer(name, $scope.se.imageId, '#cloud-config', $scope.securityGroup.id, $scope.publicNetworkData.id)
+	var userDataRaw = '#cloud-config\n\nusers:\n  - name: core\n    passwd: $6$abcdefgh$VvtMG18kvqTA.xeyJk48ATU1C.rfF.uyg1Y0XY6D5trHYWYJCNolrnra45OVGpni37Bymb3XsWBS1I1hkxhy/1\n\nwrite_files:\n  - path: /tmp/toto\n    content: |\n      azerty\n';
+	console.log(userDataRaw);
+	/*var bytes = [];
+	for (var i = 0; i < userDataRaw.length; ++i)
+	{
+	  bytes.push(userDataRaw.charCodeAt(i));
+	}
+	var userData = sjcl.codec.base64.fromBits(bytes, false, false);*/
+	var userData = userDataRaw;
+	console.info(userData);
+	return os.createServer(name, $scope.se.imageId, userData, $scope.securityGroup.id, $scope.publicNetworkData.id)
 	  .then(
 	    function(serverData){
 	      console.info('Server created: ' + JSON.stringify(serverData));
@@ -262,9 +284,9 @@ angular.module('srcApp')
       };
 
       var tryToAssociateIp = function() {
-	debugger; // jshint ignore: line
+	//debugger; // jshint ignore: line
 	var sub = function() {
-	  return os.associateFloatingIp($scope.serverData.id, $scope.floatingIp.ip);
+	  return ((kcSleep(3))()).then(os.associateFloatingIp($scope.serverData.id, $scope.floatingIp.ip));
 	};
 	return retries(sub, 3);
       };

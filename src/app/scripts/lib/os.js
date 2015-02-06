@@ -263,7 +263,7 @@ angular.module('srcApp')
       var createServer = function(name, imageId, userData, securityGroupId, networkId){
 	var deferred = $q.defer();
 	var flavorId = '2';
-	JSTACK.Nova.createserver(name, imageId, 2, '', userData, [securityGroupId], 1, 1, null, [{'uuid': networkId}], '', null, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.createserver(name, imageId, 2, 'cle', userData, [securityGroupId], 1, 1, null, [{'uuid': networkId}], '', null, deferred.resolve, deferred.reject, region);
 	return deferred.promise;
       };
       
