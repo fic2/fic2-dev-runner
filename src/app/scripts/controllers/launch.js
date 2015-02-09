@@ -198,7 +198,7 @@ angular.module('srcApp')
 	var userData = sjcl.codec.base64.fromBits(bytes, false, false);*/
 	var userData = userDataRaw;
 	console.info(userData);
-	return os.createServer(name, $scope.se.imageId, userData, $scope.securityGroup.id, $scope.publicNetworkData.id)
+	return os.createServer(name, APP_CONFIG.coreos.imageId, userData, $scope.securityGroup.id, $scope.publicNetworkData.id)
 	  .then(
 	    function(serverData){
 	      console.info('Server created: ' + JSON.stringify(serverData));
@@ -317,7 +317,7 @@ angular.module('srcApp')
 		$scope.tenantData = accessData.access.token.tenant; return null;})
 	.then(wrap('Verifying the external network existence', getAndSaveExternalNetwork))
 	.then(function(){
-		return $scope.se.imageId;})
+		return APP_CONFIG.coreos.imageId;})
 	.then(wrap('Checking the image existence', os.getImageDetails))
 	.catch(
 	  function(cause) {
