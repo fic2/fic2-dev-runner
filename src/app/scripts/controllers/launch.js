@@ -35,7 +35,7 @@ angular.module('srcApp')
     })
   .controller(
     'LaunchCtrl',
-    function($scope, $q, $resource, $routeParams, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep) {
+    function($scope, $q, $resource, $routeParams, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep, coreos) {
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       $scope.targetSeName = $routeParams.seKeyName;
       $scope.failure = 'An error occured';
@@ -168,7 +168,7 @@ angular.module('srcApp')
       };
 
       var addingSecurityGroupRules = function(groupId){
-	var ports = [80, 8080, 22, 443];
+	var ports = [80, 8080, 22, 443, 3000, 3001, 3002];
 	var promises = ports.map(
 	  function(port){
 	    return os.createSecurityGroupRule('TCP', port, port, '0.0.0.0/0', groupId)
@@ -187,8 +187,10 @@ angular.module('srcApp')
       };
 
       var bootServer = function(){
-	var name = os.createName($scope.targetSeName + '__' + (new Date().getTime()));
-	var userDataRaw = '#cloud-config\n\nusers:\n  - name: core\n    passwd: $6$abcdefgh$VvtMG18kvqTA.xeyJk48ATU1C.rfF.uyg1Y0XY6D5trHYWYJCNolrnra45OVGpni37Bymb3XsWBS1I1hkxhy/1\n\nwrite_files:\n  - path: /tmp/toto\n    content: |\n      azerty\n';
+	var name = $scope.targetSeName; //os.createName($scope.targetSeName + '__' + (new Date().getTime()));
+	//var userDataRaw = '#cloud-config\n\nusers:\n  - name: core\n    passwd: $6$abcdefgh$VvtMG18kvqTA.xeyJk48ATU1C.rfF.uyg1Y0XY6D5trHYWYJCNolrnra45OVGpni37Bymb3XsWBS1I1hkxhy/1\n\nwrite_files:\n  - path: /tmp/toto\n    content: |\n      azerty\n';
+	var tmp = coreos.toObject();
+	var userDataRaw = '#cloud-config\n\n' + JSON.stringify(tmp);
 	console.log(userDataRaw);
 	/*var bytes = [];
 	for (var i = 0; i < userDataRaw.length; ++i)
