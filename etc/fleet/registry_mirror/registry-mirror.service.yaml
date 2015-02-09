@@ -1,0 +1,37 @@
+#cloud-config
+
+coreos:
+  units:
+    - name: 'fleet.service'
+      command: 'start'
+    - name: 'registry-mirror.service'
+      command: 'start'
+      content: |
+        [Unit]
+        Description=Mirror registry for Docker images
+        After=docker.service
+        Requires=docker.service
+        [Service]
+        ExecStartPre=-/usr/bin/docker kill registry-mirror
+        ExecStartPre=-/usr/bin/docker rm -f registry-mirror
+        ExecStart=/usr/bin/docker run --name=registry-mirror --rm=true -p 8080:5000 -e STANDALONE=false -e MIRROR_SOURCE=https://registry-1.docker.io -e MIRROR_SOURCE_INDEX=https://index.docker.io registry
+        ExecStop=/usr/bin/docker stop registry-mirror
+        Restart=always
+        [Install]
+        WantedBy=multi-user.target
+    - name: 'preload-registry.service'
+      command: 'start'
+      content: |
+        [Unit]
+        Description=Preload the registry with the based images
+        After=registry-mirror.service
+        Requires=registry-mirror.service
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/bin/docker pull google/cadvisor:latest
+        ExecStart=/usr/bin/docker pull centurylink/panamax-api:latest
+        ExecStart=/usr/bin/docker pull centurylink/panamax-ui:latest
+        StandardInput=tty
+        RemainAfterExit=yes
+        [Install]
+        WantedBy=multi-user.target
