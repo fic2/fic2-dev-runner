@@ -101,7 +101,7 @@ angular.module('srcApp')
 		  '[Service]',
 		  'ExecStartPre=-/usr/bin/docker kill PMX_UI',
 		  'ExecStartPre=-/usr/bin/docker rm -f PMX_UI',
-		  'ExecStart=/usr/bin/docker run --name=PMX_UI -v /var/run/docker.sock:/run/docker.sock:rw --link=PMX_API:PMX_API --link=PMX_CADVISOR:CADVISOR -e 3000 -p 3000:3000  centurylink/panamax-ui:latest',
+		  'ExecStart=/usr/bin/docker run --name=PMX_UI --rm=true -v /var/run/docker.sock:/run/docker.sock:rw --link=PMX_API:PMX_API --link=PMX_CADVISOR:PMX_CADVISOR -e 3000 -p 3000:3000  centurylink/panamax-ui:latest',
 		  'ExecStop=/usr/bin/docker stop PMX_UI',
 		  'Restart=always',
 		  '[Install]',

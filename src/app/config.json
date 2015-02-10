@@ -16,7 +16,8 @@
   "old_external-network-id": "c02a7883-ff90-4e3d-9f10-fdf2d2c0025e",
 
   "coreos": {
-    "imageId": "2f99979b-feb4-41ed-b677-9ffbcd346fb1"
+    "imageId": "fcabe012-b577-4537-8427-e1036b0e7e67",
+    "old_imageId": "2f99979b-feb4-41ed-b677-9ffbcd346fb1"
   },
 
   "trash": [
