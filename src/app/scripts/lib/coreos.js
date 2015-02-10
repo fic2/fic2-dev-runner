@@ -55,6 +55,9 @@ angular.module('srcApp')
 	      // 	].join('\n')
 	      // },
 
+	      { name: 'systemd-journal-gatewayd.service',
+		command: 'start'
+	      },
 	      { name: 'fleet.service',
 		command: 'start'
 	      },
@@ -85,7 +88,7 @@ angular.module('srcApp')
 		  '[Service]',
 		  'ExecStartPre=-/usr/bin/docker kill PMX_API',
 		  'ExecStartPre=-/usr/bin/docker rm PMX_API',
-		  'ExecStart=/usr/bin/docker run --name=PMX_API --rm=true -v /var/panamax-data:/usr/src/app/db/mnt -v /var/run/docker.sock:/run/docker.sock:rw  -e JOURNAL_ENDPOINT=http://10.0.42.1:19531 -e FLEETCTL_ENDPOINT=http://10.0.42.1:4001 -t -p 3001:3000 centurylink/panamax-api:latest',
+		  'ExecStart=/usr/bin/docker run --name=PMX_API --rm=true -v /var/panamax-data:/usr/src/app/db/mnt -v /var/run/docker.sock:/run/docker.sock:rw  -e JOURNAL_ENDPOINT=http://172.17.42.1:19531 -e FLEETCTL_ENDPOINT=http://172.17.42.1:4001 -t -p 3001:3000 centurylink/panamax-api:latest',
 		  'ExecStop=/usr/bin/docker stop PMX_API',
 		  'Restart=always',
 		  '[Install]',
