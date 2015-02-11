@@ -35,7 +35,7 @@ angular.module('srcApp')
     })
   .controller(
     'LaunchCtrl',
-    function($scope, $q, $resource, $routeParams, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep, coreos) {
+    function($scope, $q, $resource, $routeParams, $timeout, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep, coreos) {
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       $scope.targetSeName = $routeParams.seKeyName;
       $scope.failure = 'An error occured';
@@ -186,8 +186,8 @@ angular.module('srcApp')
 	return $q.all(promises);
       };
 
-      var bootServer = function(){
-	var name = $scope.targetSeName; //os.createName($scope.targetSeName + '__' + (new Date().getTime()));
+      var bootServer = function(){ // '413 Error' quota overlimit
+	var name = 'dhub_' + $scope.targetSeName; //os.createName($scope.targetSeName + '__' + (new Date().getTime()));
 	//var userDataRaw = '#cloud-config\n\nusers:\n  - name: core\n    passwd: $6$abcdefgh$VvtMG18kvqTA.xeyJk48ATU1C.rfF.uyg1Y0XY6D5trHYWYJCNolrnra45OVGpni37Bymb3XsWBS1I1hkxhy/1\n\nwrite_files:\n  - path: /tmp/toto\n    content: |\n      azerty\n';
 	var tmp = coreos.toObject();
 	var userDataRaw = '#cloud-config\n\n' + JSON.stringify(tmp);
@@ -200,14 +200,16 @@ angular.module('srcApp')
 	var userData = sjcl.codec.base64.fromBits(bytes, false, false);*/
 	var userData = userDataRaw;
 	console.info(userData);
-	return os.createServer(name, APP_CONFIG.coreos.imageId, userData, $scope.securityGroup.id, $scope.publicNetworkData.id)
-	  .then(
-	    function(serverData){
-	      console.info('Server created: ' + JSON.stringify(serverData));
-	      $scope.serverData = serverData.server;
-	      return serverData.server;
-	    }
-	  );
+	var sub = function() {
+	  return os.createServer(name, APP_CONFIG.coreos.imageId, userData, $scope.securityGroup.id, $scope.publicNetworkData.id)
+	    .then(
+	      function(serverData){
+		console.info('Server created: ' + JSON.stringify(serverData));
+		$scope.serverData = serverData.server;
+		return serverData.server;
+	      });
+	};
+	return retries(sub, 3);
       };
 
 
@@ -277,20 +279,34 @@ angular.module('srcApp')
       };
 
       var getAndSaveExternalNetwork = function() {
-	return os.getNetworkDetail(APP_CONFIG['external-network-id'])
-	  .then(
-	    function(externalNetworkData) {
-	      $scope.externalNetworkData = externalNetworkData;
-	    }
-	  );
+	var sub = function() {
+	  return os.getNetworkDetail(APP_CONFIG['external-network-id'])
+	    .then(
+	      function(externalNetworkData) {
+		$scope.externalNetworkData = externalNetworkData;
+	      }
+	    );
+	};
+	return retries(sub, 3);
       };
 
       var tryToAssociateIp = function() {
-	//debugger; // jshint ignore: line
-	var sub = function() {
-	  return ((kcSleep(3))()).then(os.associateFloatingIp($scope.serverData.id, $scope.floatingIp.ip));
+	var sub = function(counter) {
+	  if (counter <= 0) {
+	    $scope.failure = 'The function for associating an ip timed out';
+	    return $q.reject('TimeOut');
+	  }
+	  return $timeout(function(){ return os.associateFloatingIp($scope.serverData.id, $scope.floatingIp.ip); }, 5000)
+	    .catch(
+	      function(cause) {
+		//debugger; // jshint ignore: line
+		if (typeof cause === 'object' && 'message' in cause && cause.message === '400 Error') {
+		  return sub(counter - 1);
+		}
+		return $q.reject(cause);
+	      });	  
 	};
-	return retries(sub, 3);
+	return sub(24);
       };
 
 

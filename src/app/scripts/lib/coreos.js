@@ -17,7 +17,14 @@ angular.module('srcApp')
 	    }
 	  ],
 	  write_files: [
-	    { path: '/home/core/testo', content: 'azerty' }
+	    { path: '/home/core/testo', content: 'azerty' },
+	    { path: '/etc/systemd/resolved.conf.d/10-fix_dns.conf',
+	      content: [
+	      	'[Resolve]',
+	      	'DNS=8.8.8.8',
+	      	'FallbackDNS=8.8.4.4 193.52.45.190'		     
+	      ].join('\n')
+	    }
 	  ],
 	  coreos: {
 	    update: {
@@ -56,7 +63,7 @@ angular.module('srcApp')
 	      // },
 
 	      { name: 'systemd-journal-gatewayd.service',
-		command: 'start'
+	      	command: 'start'
 	      },
 	      { name: 'fleet.service',
 		command: 'start'
