@@ -9,6 +9,6 @@ RUN apt-get update -y && \
 ADD nginx /etc/nginx
 ADD boot.sh .
 
-EXPOSE 80 443
+EXPOSE 80 443 1111
 
 CMD ["./boot.sh"]

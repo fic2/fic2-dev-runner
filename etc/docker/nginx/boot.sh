@@ -14,7 +14,8 @@ fi
 
 wget "http://dhub:9000/config.json"
 
-jq -r '.["cloud-uri"], .cors[] | "add_header \"Access-Control-Allow-Origin\" \"\(.)\";"' config.json > /etc/nginx/cors.conf
+#jq -r '.["cloud-uri"], .cors[] | "add_header \"Access-Control-Allow-Origin\" \"\(.)\";"' config.json > /etc/nginx/cors.conf
+echo 'add_header "Access-Control-Allow-Origin" "*";' > /etc/nginx/cors.conf
 echo 'add_header "Access-Control-Allow-Methods" "*";' >> /etc/nginx/cors.conf
 
 

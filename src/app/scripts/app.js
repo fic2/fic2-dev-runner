@@ -81,7 +81,8 @@ angular
     }
   )
   .config(
-    function ($provide, $routeProvider, $locationProvider) {
+    function ($provide, $routeProvider, $locationProvider, $sceProvider) {
+      $sceProvider.enabled(false);
       $provide.decorator('$sniffer', function($delegate) {
 			   $delegate.history = false;
 			   return $delegate;

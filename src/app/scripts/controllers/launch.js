@@ -35,7 +35,7 @@ angular.module('srcApp')
     })
   .controller(
     'LaunchCtrl',
-    function($scope, $q, $resource, $routeParams, $timeout, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep, coreos) {
+    function($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep, coreos, panamaxFactory) {
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       $scope.targetSeName = $routeParams.seKeyName;
       $scope.failure = 'An error occured';
@@ -168,7 +168,7 @@ angular.module('srcApp')
       };
 
       var addingSecurityGroupRules = function(groupId){
-	var ports = [80, 8080, 22, 443, 3000, 3001, 3002];
+	var ports = [80, 8080, 22, 443, 3000, 3001, 3002, 6001];
 	var promises = ports.map(
 	  function(port){
 	    return os.createSecurityGroupRule('TCP', port, port, '0.0.0.0/0', groupId)
@@ -310,23 +310,45 @@ angular.module('srcApp')
       };
 
 
-     var getSharedPublicNetwork = function() {
-       var targetId = APP_CONFIG['shared-network-id'];
-       return os.getNetworkDetail(targetId)
-	 .then(
-	   function(networkData) {
-	     $scope.publicNetworkData = networkData;
-	     return networkData;
-	   }
-	 )
-	 .catch(
-	   function(cause){
-	     var msg = 'The shared network "' + targetId + '" used by the instance was not found. Perhaps the DHub service is misconfigured.';
-	     console.error(msg);
-	     $scope.failure = msg;
-	     return $q.reject(cause);	     
-	   });
-     };
+      var getSharedPublicNetwork = function() {
+	var targetId = APP_CONFIG['shared-network-id'];
+	return os.getNetworkDetail(targetId)
+	  .then(
+	    function(networkData) {
+	      $scope.publicNetworkData = networkData;
+	      return networkData;
+	    }
+	  )
+	  .catch(
+	    function(cause){
+	      var msg = 'The shared network "' + targetId + '" used by the instance was not found. Perhaps the DHub service is misconfigured.';
+	      console.error(msg);
+	      $scope.failure = msg;
+	      return $q.reject(cause);	     
+	    });
+      };
+      
+      var waitForPanamax = function() {
+	var sub = function(counter) {
+	  if (counter <= 0) {
+	    $scope.failure = 'The function for checking panamax timed out';
+	    return $q.reject('TimeOut');
+	  }
+	  return $timeout(function(){ return $scope.panamax.misc.Types().query().$promise; }, 5000)
+	  //return $scope.panamax.misc.Types().get().$promise
+	    .catch(
+	      function(cause) {
+		$scope.r = $resource;
+		debugger; // jshint ignore: line
+		if (cause.status == 0 || cause.status == 502) {
+		  return sub(counter - 1);
+		}
+		return $q.reject(cause);
+	      });	  
+	};
+	$scope.panamax = panamaxFactory('https://' + $location.host() + ':1111', $scope.floatingIp.ip, 6001);
+	return sub(24);	
+      };
       
       $scope.steps = [];
       ((wrap('Loading tenant information', os.loadTenant))(oauth_creds.access_token))
@@ -350,11 +372,12 @@ angular.module('srcApp')
 	//.then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
 	//.then(wrap('Creating the router', getOrCreateRouter))
 	//.then(wrap('Attach router to subnet', bindRouterToSubnet))
-	.then(wrap('Fetch the network', getSharedPublicNetwork))
+	.then(wrap('Fetching the network', getSharedPublicNetwork))
 	.then(wrap('Creating the security group', getOrCreateSecurityGroup))
 	.then(wrap('Adding the security group\'s rules', addingSecurityGroupRules))
 	.then(wrap('Creating the server', bootServer))
-	.then(wrap('Associate the floating ip to the newly created instance', tryToAssociateIp))
+	.then(wrap('Associating the floating ip to the newly created instance', tryToAssociateIp))
+	.then(wrap('Waiting for Panamax', waitForPanamax))
 	.catch(
 	  function(cause){
 	    $scope.cause = cause;
