@@ -346,7 +346,7 @@ angular.module('srcApp')
 		return $q.reject(cause);
 	      });	  
 	};
-	$scope.panamax = panamaxFactory('https://' + $location.host() + ':1111', $scope.floatingIp.ip, 6001);
+	$scope.panamax = panamaxFactory('https://' + $location.host() + '/__proxy', $scope.floatingIp.ip, 6001);
 	return sub(24);	
       };
       
