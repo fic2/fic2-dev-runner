@@ -61,6 +61,24 @@ angular.module('srcApp')
 	};
       };
 
+      var retriesWithDelay = function(promise, max, delay){
+	var tmp = promise();
+	for (var index=1; index <= max; index++) {
+	  tmp = tmp
+	    .then(function(result){return result;})
+	    .catch(
+	      function() {
+		if (delay <= 0) {
+		  return promise();
+		} else {
+		  return $timeout(function() { return promise(); }, delay);
+		}
+	      }
+	    );
+	}
+	return tmp;
+      };
+
       var getOrCreatePublicNetwork = function() {
 	var name = os.createName('private_network');
 	return os.getNetworksList()
@@ -212,6 +230,48 @@ angular.module('srcApp')
 	return retries(sub, 3);
       };
 
+      var getOrBootServer = function() { // '413 Error' quota overlimit
+	var name = 'dhub_' + $scope.targetSeName;
+	var boot = function() {
+	  var userData = '#cloud-config\n\n' + JSON.stringify(coreos.toObject());
+	  var sub = function() {
+	  return os.createServer(name, APP_CONFIG.coreos.imageId, userData,
+				 $scope.securityGroup.id, $scope.publicNetworkData.id)
+	      .then(
+		function(serverData) {
+		  console.info('Server created: ' + JSON.stringify(serverData));
+		  debugger; // jshint ignore: line
+		  $scope.serverData = serverData.server;
+		  return null;
+		});	    
+	  };
+	  return retriesWithDelay(sub, 3, 500);
+	};
+	var get = function() {
+	  return os.fetchNovaServers()
+	    .then(function(data){return data.servers;})
+	    .then(os.getByNameFactory(name))
+	    .then(
+	      function(serverData) {
+		debugger; // jshint ignore: line
+		console.info('Server found: ' + JSON.stringify(serverData));
+		$scope.serverData = serverData;
+		return null;
+	      }
+	    );
+	};
+	return retriesWithDelay(get, 3, 500)
+	  .catch(
+	    function(cause) {
+	      debugger; // jshint ignore: line
+	      if (cause === 'Not found') {
+		return boot(); 
+	      }
+	      $scope.failure = 'Problems while fetching the servers list';
+	      return $q.reject(cause);	      
+	    }
+	  );
+      };
 
       
       var retries = function(promise, max){
@@ -227,6 +287,7 @@ angular.module('srcApp')
 	}
 	return tmp;
       };
+
       
       var getOrAllocateFloatingIp = function(){
 	var max = 3;
@@ -262,7 +323,16 @@ angular.module('srcApp')
 	    })
 	  .then(
 	    function(floatingIps) {
-	      for (var index = 0; index < floatingIps.length; index++){
+	      var index = null;
+	      for (index = 0; index < floatingIps.length; index++){
+		var current = floatingIps[index];
+		if (current.pool === $scope.externalNetworkData.name &&
+		    current.instance_id === $scope.serverData.id) {
+		  $scope.floatingIp = current;
+		  return current;
+		}
+	      }
+	      for (index = 0; index < floatingIps.length; index++){
 		var current = floatingIps[index];
 		if (current.pool === $scope.externalNetworkData.name && !current.instance_id) {
 		  $scope.floatingIp = current;
@@ -306,7 +376,29 @@ angular.module('srcApp')
 		return $q.reject(cause);
 	      });	  
 	};
-	return sub(24);
+	var check = function() {
+	  return retries(function(){return os.getFloatingIps();}, 3)
+	    .then(
+	      function(floatingIpsData) {
+		return floatingIpsData.floating_ips;
+	      })
+	    .catch(function(){ $scope.failure='A problem occured when reaching the floating ip\'s endpoint; perhaps the pool is misconfigured.'; })
+	    .then(
+	      function(floatingIps) {
+		var index = null;
+		for (index = 0; index < floatingIps.length; index++){
+		  var current = floatingIps[index];
+		  debugger; // jshint ignore: line
+		  if (current.pool === $scope.externalNetworkData.name &&
+		      current.instance_id === $scope.serverData.id) {
+		    $scope.floatingIp = current;
+		    return current;
+		  }
+		}
+		return sub(24);
+	      });
+	};
+	return check();
       };
 
 
@@ -350,8 +442,21 @@ angular.module('srcApp')
 	return sub(25);	
       };
       
+      var start = function(oauth_access_token) {
+	var sub = function() {
+	  return os.loadTenant(oauth_access_token);;
+	};
+	return retriesWithDelay(sub, 3, 1000)
+	  .catch(
+	    function(cause) {
+	      $scope.failure = 'The OpenStack\'s endpoint is unavailable.';
+	      return $q.reject(cause);
+	    }
+	  );
+      };
+
       $scope.steps = [];
-      ((wrap('Loading tenant information', os.loadTenant))(oauth_creds.access_token))
+      ((wrap('Loading tenant information', start))(oauth_creds.access_token))
 	.then(wrap('Authentificating with Keystone', os.authenticateWithKeystone))
 	.then(function(accessData){
 		$scope.tenantData = accessData.access.token.tenant; return null;})
@@ -367,7 +472,6 @@ angular.module('srcApp')
 	    return $q.reject(cause);
 	  }
 	)// 404 not found
-	.then(wrap('Finding or allocating a floating ip', getOrAllocateFloatingIp))
         //.then(wrap('Creating the public network', getOrCreatePublicNetwork))
 	//.then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
 	//.then(wrap('Creating the router', getOrCreateRouter))
@@ -375,7 +479,9 @@ angular.module('srcApp')
 	.then(wrap('Fetching the network', getSharedPublicNetwork))
 	.then(wrap('Creating the security group', getOrCreateSecurityGroup))
 	.then(wrap('Adding the security group\'s rules', addingSecurityGroupRules))
-	.then(wrap('Creating the server', bootServer))
+	// .then(wrap('Creating the server', bootServer))
+	.then(wrap('Creating the server', getOrBootServer))
+	.then(wrap('Finding or allocating a floating ip', getOrAllocateFloatingIp))
 	.then(wrap('Associating the floating ip to the newly created instance', tryToAssociateIp))
 	.then(wrap('Waiting for Panamax', waitForPanamax))
 	.catch(

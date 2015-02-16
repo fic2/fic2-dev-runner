@@ -121,7 +121,7 @@ angular.module('srcApp')
 	var deferred = $q.defer();
 	JSTACK.Nova.getserverlist(true, false, deferred.resolve, deferred.reject, region);
 	return deferred.promise
-	  .then(function(servers_data){console.log(servers_data);});
+	  .then(function(servers_data){console.log(servers_data); return servers_data;});
       };
 
       var getImageDetails = function(imageId){
@@ -291,6 +291,12 @@ angular.module('srcApp')
 	JSTACK.Nova.associatefloatingIP(serverId, address, null, deferred.resolve, deferred.reject, region);
 	return deferred.promise;
       };
+
+      var getServerDetail = function(serverId) {
+	var deferred = $q.defer();
+	JSTACK.Nova.getserverdetail(serverId, deferred.resolve, deferred.reject, region);
+	return deferred.promise;	
+      };
  
 
       return {
@@ -316,7 +322,8 @@ angular.module('srcApp')
 	addInterfaceToRouter: addInterfaceToRouter,
 	getFloatingIps: getFloatingIps,
 	allocateFloatingIp: allocateFloatingIp,
-	associateFloatingIp: associateFloatingIp
+	associateFloatingIp: associateFloatingIp,
+	getServerDetail: getServerDetail
       };
     }
   );
