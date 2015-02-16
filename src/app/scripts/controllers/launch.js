@@ -248,7 +248,7 @@ angular.module('srcApp')
 	    .catch(
 	      function(cause) {
 		if ('message' in cause && cause.message === '500 Error') {
-		  $scope.failure = 'Impossibility to find or create a free floating ip.';
+		  $scope.failure = 'Impossibility to find or create a free floating ip: your quota must be full.';
 		}
 		return $q.reject(cause);
 	      }
