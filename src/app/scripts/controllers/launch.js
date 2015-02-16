@@ -334,12 +334,12 @@ angular.module('srcApp')
 	    $scope.failure = 'The function for checking panamax timed out';
 	    return $q.reject('TimeOut');
 	  }
-	  return $timeout(function(){ return $scope.panamax.misc.Types().query().$promise; }, 5000)
+	  return $timeout(function(){ return $scope.panamax.misc.Types().query().$promise; }, 10000)
 	  //return $scope.panamax.misc.Types().get().$promise
 	    .catch(
 	      function(cause) {
 		$scope.r = $resource;
-		debugger; // jshint ignore: line
+		//debugger; // jshint ignore: line
 		if (cause.status == 0 || cause.status == 502) {
 		  return sub(counter - 1);
 		}
@@ -347,7 +347,7 @@ angular.module('srcApp')
 	      });	  
 	};
 	$scope.panamax = panamaxFactory('https://' + $location.host() + '/__proxy', $scope.floatingIp.ip, 6001);
-	return sub(24);	
+	return sub(25);	
       };
       
       $scope.steps = [];
