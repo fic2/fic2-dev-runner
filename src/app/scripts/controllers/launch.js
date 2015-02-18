@@ -441,6 +441,60 @@ angular.module('srcApp')
 	$scope.panamax = panamaxFactory('https://' + $location.host() + '/__proxy', $scope.floatingIp.ip, 6001);
 	return sub(25);	
       };
+
+      var injectTemplatesRepo = function() {
+	var name = 'tai-lab/fic2-poc-templates_pmx';
+	var get = function() {
+	  return $scope.panamax.sources.findByName(name);
+	};
+	var create = function() {
+	  return $scope.panamax.sources.SourcesFactory().save({name: name}).$promise;
+	};
+	return retriesWithDelay(get, 3, 750)
+	  .catch(
+	    function(cause) {
+	      return retriesWithDelay(create, 3, 750)
+		.catch(
+		  function(cause) {
+		    $scope.failure = 'Cannot get or attach the SE repository';
+		    return $q.reject(cause);
+		  }
+		);
+	    }
+	  );
+      };
+
+      var fetchPmxTemplates = function() {
+	var name = 'Social Network SE';
+	var sub = function() {
+	  return $scope.panamax.templates.findByName(name)
+	    .then(
+	      function(data) {
+		debugger; // jshint ignore: line
+		$scope.pmxTemplates = data.all;
+		$scope.pmxTarget = data.target;
+	      })
+	    .catch(
+	      function(cause) {
+		$scope.failure = 'The corresponding template was not found.';
+		return $q.reject(cause);
+	      }
+	    );
+	};
+	return retriesWithDelay(sub, 3, 750);
+      };
+
+      var launchTemplate = function() {
+	var sub = function() {
+	  return $scope.panamax.apps.Apps().save({template_id: $scope.pmxTarget.id}).$promise
+	    .then(
+	      function(data) {
+		debugger; // jshint ignore: line
+	      }
+	    );
+	};
+	return retriesWithDelay(sub, 3, 750);
+      };
       
       var start = function(oauth_access_token) {
 	var sub = function() {
@@ -457,7 +511,7 @@ angular.module('srcApp')
 
       $scope.steps = [];
       ((wrap('Loading tenant information', start))(oauth_creds.access_token))
-	.then(wrap('Authentificating with Keystone', os.authenticateWithKeystone))
+	.then(wrap('Authenticating with Keystone', os.authenticateWithKeystone))
 	.then(function(accessData){
 		$scope.tenantData = accessData.access.token.tenant; return null;})
 	.then(wrap('Verifying the external network existence', getAndSaveExternalNetwork))
@@ -484,6 +538,9 @@ angular.module('srcApp')
 	.then(wrap('Finding or allocating a floating ip', getOrAllocateFloatingIp))
 	.then(wrap('Associating the floating ip to the newly created instance', tryToAssociateIp))
 	.then(wrap('Waiting for Panamax', waitForPanamax))
+	.then(wrap('Injecting the SE repository', injectTemplatesRepo))
+	.then(wrap('Fetching the Panamax templates', fetchPmxTemplates))
+	.then(wrap('Starting the SE\'s template', launchTemplate))
 	.catch(
 	  function(cause){
 	    $scope.cause = cause;
