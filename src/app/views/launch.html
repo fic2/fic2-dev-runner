@@ -59,6 +59,25 @@
     </div>
   </div>
 
+  <button id="success-dialog_button" class="btn btn-primary hide" data-toggle="modal" data-target="#success-dialog" data-backdrop="static" data-keyboard="false">See success</button>
+  <div id="success-dialog" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+	<div class="modal-header">
+          <h4 class="modal-title text-success">Success</h4>
+	</div>
+	<div class="modal-body">
+	  <div ng-success></div>
+	</div>
+	<div class="modal-footer">
+          <!-- <button class="btn btn-primary" data-dismiss="modal">Dismiss</button> -->
+	  <a href="/" class="btn btn-xs btn-primary">Go back to the main index</a>
+	  <a href="{{success_target_url}}" class="btn btn-lg btn-success">Go to your Panamax</a>
+	</div>
+      </div>
+    </div>
+  </div>
+
   <!-- <script> -->
   <!--   $(function() { -->
   <!--   $.material.init(); -->

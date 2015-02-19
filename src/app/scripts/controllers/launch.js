@@ -33,12 +33,22 @@ angular.module('srcApp')
 	template: '<div class="alert alert-dismissable alert-danger"><strong>{{failure}}</strong><p>{{cause}}</p></div>'
       };
     })
+  .directive(
+    'ngSuccess',
+    function() {
+      return {
+	restrict: 'A',
+	scope: true,
+	template: '<div class="alert alert-dismissable alert-success"><strong>{{success}}</strong></div>'
+      };
+    })
   .controller(
     'LaunchCtrl',
     function($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep, coreos, panamaxFactory) {
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       $scope.targetSeName = $routeParams.seKeyName;
       $scope.failure = 'An error occured';
+      $scope.instance_name = '_dhub_generated_panamax';
       var oauth_creds = loginRequired;
 
       var wrap = function(text, wrapped_promise){
@@ -205,7 +215,7 @@ angular.module('srcApp')
       };
 
       var bootServer = function(){ // '413 Error' quota overlimit
-	var name = 'dhub_' + $scope.targetSeName; //os.createName($scope.targetSeName + '__' + (new Date().getTime()));
+	var name = $scope.instance_name; //os.createName($scope.targetSeName + '__' + (new Date().getTime()));
 	//var userDataRaw = '#cloud-config\n\nusers:\n  - name: core\n    passwd: $6$abcdefgh$VvtMG18kvqTA.xeyJk48ATU1C.rfF.uyg1Y0XY6D5trHYWYJCNolrnra45OVGpni37Bymb3XsWBS1I1hkxhy/1\n\nwrite_files:\n  - path: /tmp/toto\n    content: |\n      azerty\n';
 	var tmp = coreos.toObject();
 	var userDataRaw = '#cloud-config\n\n' + JSON.stringify(tmp);
@@ -231,7 +241,7 @@ angular.module('srcApp')
       };
 
       var getOrBootServer = function() { // '413 Error' quota overlimit
-	var name = 'dhub_' + $scope.targetSeName;
+	var name = $scope.instance_name;
 	var boot = function() {
 	  var userData = '#cloud-config\n\n' + JSON.stringify(coreos.toObject());
 	  var sub = function() {
@@ -240,7 +250,7 @@ angular.module('srcApp')
 	      .then(
 		function(serverData) {
 		  console.info('Server created: ' + JSON.stringify(serverData));
-		  debugger; // jshint ignore: line
+		  //debugger; // jshint ignore: line
 		  $scope.serverData = serverData.server;
 		  return null;
 		});	    
@@ -253,7 +263,7 @@ angular.module('srcApp')
 	    .then(os.getByNameFactory(name))
 	    .then(
 	      function(serverData) {
-		debugger; // jshint ignore: line
+		//debugger; // jshint ignore: line
 		console.info('Server found: ' + JSON.stringify(serverData));
 		$scope.serverData = serverData;
 		return null;
@@ -263,7 +273,7 @@ angular.module('srcApp')
 	return retriesWithDelay(get, 3, 500)
 	  .catch(
 	    function(cause) {
-	      debugger; // jshint ignore: line
+	      //debugger; // jshint ignore: line
 	      if (cause === 'Not found') {
 		return boot(); 
 	      }
@@ -388,7 +398,7 @@ angular.module('srcApp')
 		var index = null;
 		for (index = 0; index < floatingIps.length; index++){
 		  var current = floatingIps[index];
-		  debugger; // jshint ignore: line
+		  //debugger; // jshint ignore: line
 		  if (current.pool === $scope.externalNetworkData.name &&
 		      current.instance_id === $scope.serverData.id) {
 		    $scope.floatingIp = current;
@@ -470,7 +480,7 @@ angular.module('srcApp')
 	  return $scope.panamax.templates.findByName(name)
 	    .then(
 	      function(data) {
-		debugger; // jshint ignore: line
+		//debugger; // jshint ignore: line
 		$scope.pmxTemplates = data.all;
 		$scope.pmxTarget = data.target;
 	      })
@@ -486,14 +496,20 @@ angular.module('srcApp')
 
       var launchTemplate = function() {
 	var sub = function() {
-	  return $scope.panamax.apps.Apps().save({template_id: $scope.pmxTarget.id}).$promise
-	    .then(
-	      function(data) {
-		debugger; // jshint ignore: line
-	      }
-	    );
+	  return $scope.panamax.apps.Apps().save({template_id: $scope.pmxTarget.id}).$promise;
 	};
-	return retriesWithDelay(sub, 3, 750);
+	return retriesWithDelay(sub, 3, 750)
+	  .then(
+	    function(data) {
+	      //debugger; // jshint ignore: line
+	      $scope.success_target_url = 'http://' + $scope.floatingIp.ip + ':3000';
+	      $scope.success = 'Panamax should be up & accessible (' + $scope.success_target_url + ')';
+	    })
+	  .catch(
+	    function(cause) {
+	      $scope.failure = 'Unable to launch the SE';
+	      return $q.reject(cause);
+	    });
       };
       
       var start = function(oauth_access_token) {
@@ -541,6 +557,11 @@ angular.module('srcApp')
 	.then(wrap('Injecting the SE repository', injectTemplatesRepo))
 	.then(wrap('Fetching the Panamax templates', fetchPmxTemplates))
 	.then(wrap('Starting the SE\'s template', launchTemplate))
+	.then(
+	  function() {
+	    //debugger; // jshint ignore: line
+	    angular.element('#success-dialog_button').trigger('click');
+	  })
 	.catch(
 	  function(cause){
 	    $scope.cause = cause;
