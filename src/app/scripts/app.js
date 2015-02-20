@@ -93,6 +93,10 @@ angular
 			   controller: 'LaunchCtrl',
 			   resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
 			 })
+	.when('/wip/0', { templateUrl: 'views/wip.html',
+			controller: 'WipCtrl',
+			resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
+	      })
 	.when('/', { templateUrl: 'views/main.html',
 		     controller: 'MainCtrl',
 		     resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
