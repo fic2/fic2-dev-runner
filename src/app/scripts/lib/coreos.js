@@ -67,11 +67,23 @@ angular.module('srcApp')
 		  { name: '50-insecure-registry.conf', // https://coreos.com/docs/cluster-management/setup/cloudinit-cloud-config/
 		    content: [
 		      '[Service]',
-		      'Environment=\'DOCKER_OPTS=--registry-mirror="http://192.168.254.14:8080" --insecure-registry="0.0.0.0/0"\''
+		      'Environment=\'DOCKER_OPTS=--log-level="debug" --registry-mirror="http://192.168.254.14:8080" --insecure-registry="0.0.0.0/0"\''
 		    ].join('\n')
 		  }
 		]
 	      },
+	      // { name: 'systemd-journald.service',
+	      // 	"drop-ins": [
+	      // 	  { name: '50-limit-journal-size.conf',
+	      // 	    content: [
+	      // 	      '[Journal]',
+	      // 	      'Compress=yes',
+	      // 	      'SystemMaxUse=500M',
+	      // 	      'SystemMaxFileSize=10M'
+	      // 	    ].join('\n')
+	      // 	  }
+	      // 	]
+	      // },
 
 	      // { name: 'docker.service', // /usr/lib/systemd/system/docker.service
 	      // 	command: 'start',
@@ -109,7 +121,7 @@ angular.module('srcApp')
 		  '[Service]',
 		  'ExecStartPre=-/usr/bin/docker kill PMX_CADVISOR',
 		  'ExecStartPre=-/usr/bin/docker rm -f PMX_CADVISOR',
-		  'ExecStart=/usr/bin/docker run --name=PMX_CADVISOR --rm=true --volume=/var/run:/var/run:rw --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro --publish=3002:8080 google/cadvisor:latest',
+		  'ExecStart=/usr/bin/docker run --name=PMX_CADVISOR --rm=true --volume=/var/run:/var/run:rw --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro --publish=3002:8080 google/cadvisor:latest -log_dir / --global_housekeeping_interval=30s --housekeeping_interval=17s',
 		  'ExecStop=/usr/bin/docker stop PMX_CADVISOR',
 		  'Restart=always',
 		  '[Install]',

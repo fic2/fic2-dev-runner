@@ -196,7 +196,7 @@ angular.module('srcApp')
       };
 
       var addingSecurityGroupRules = function(groupId){
-	var ports = [80, 8080, 22, 443, 3000, 3001, 3002, 6001];
+	var ports = [80, 8080, 22, 443, 3000, 3001, 3002, 6001, 8000];
 	var promises = ports.map(
 	  function(port){
 	    return os.createSecurityGroupRule('TCP', port, port, '0.0.0.0/0', groupId)
