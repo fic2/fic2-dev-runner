@@ -99,6 +99,10 @@ angular
 						   controller: 'AccessCtrl',
 						   resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
 						 })
+		.when('/create', { templateUrl: 'views/create.html',
+						   controller: 'CreateCtrl',
+						   resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
+						 })
 		.when('/old', { templateUrl: 'views/main.html',
 						controller: 'MainCtrl',
 						resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
