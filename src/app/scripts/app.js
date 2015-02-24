@@ -52,15 +52,17 @@ angular
     'loginRequiredFactory',
     function($rootScope, $location, $q, AccessToken, Endpoint) {
       return function() {
-	var deferred = $q.defer();
-	var logged = !!AccessToken.get();
-	if(! logged) {
-          //deferred.reject();
-	  return Endpoint.redirect();
-	} else {
+        var deferred = $q.defer();
+        var logged = !!AccessToken.get();
+		console.log('loginRequiredFactory, logged=' + logged);
+		if(! logged) {
+          deferred.reject('Not logged');
+		  //return Endpoint.redirect();
+		} else {
+		  console.log('loginRequiredFactory, access=', AccessToken.get());
           deferred.resolve(AccessToken.get());
-	}
-	return deferred.promise;
+		}
+		return deferred.promise;
       };
     })
   .factory(
@@ -89,23 +91,31 @@ angular
 			 });
       $locationProvider.html5Mode(true).hashPrefix('!');
       $routeProvider
-	.when('/launch/:seKeyName', { templateUrl: 'views/launch.html',
-			   controller: 'LaunchCtrl',
-			   resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
-			 })
-	.when('/wip/0', { templateUrl: 'views/wip.html',
-			controller: 'WipCtrl',
-			resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
-	      })
-	.when('/', { templateUrl: 'views/main.html',
-		     controller: 'MainCtrl',
-		     resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
-		   })
-	.otherwise({ redirectTo: '/' });
+        .when('/launch/:seKeyName', { templateUrl: 'views/launch.html',
+									  controller: 'LaunchCtrl',
+									  resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
+									})
+		.when('/access', { templateUrl: 'views/access.html',
+						   controller: 'AccessCtrl',
+						   resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
+						 })
+		.when('/old', { templateUrl: 'views/main.html',
+						controller: 'MainCtrl',
+						resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
+					  })
+		.otherwise({ redirectTo: '/access' });
     })
   .run(
-    function ($rootScope, $location, $resource, APP_CONFIG) {
+    function ($rootScope, $location, $resource, APP_CONFIG, Endpoint) {
       $rootScope.OAuthConfig = APP_CONFIG;
+
+	  $rootScope.$on("$routeChangeError", 
+					 function (event, current, previous, rejection) {
+					   console.log(event, current, previous, rejection);
+					   if (rejection === 'Not logged') {
+						 Endpoint.redirect();
+					   }
+					 });
       
       // $rootScope.$on(
       // 	'$viewContentLoaded', function(){
