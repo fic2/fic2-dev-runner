@@ -530,11 +530,13 @@ angular.module('srcApp')
 	        .then(wrap('Associating the floating ip to the newly created instance', tryToAssociateIp))
 	        .then(wrap('Waiting for Panamax', waitForPanamax))
 	        .then(wrap('Injecting the SE repository', injectTemplatesRepo))
-	        .then(wrap('Fetching the Panamax templates', fetchPmxTemplates))
-	        .then(wrap('Starting the SE\'s template', launchTemplate))
+	        //.then(wrap('Fetching the Panamax templates', fetchPmxTemplates))
+	        //.then(wrap('Starting the SE\'s template', launchTemplate))
 	        .then(
 	          function() {
 	            //debugger; // jshint ignore: line
+		    $scope.success_target_url = 'http://' + $scope.floatingIp.ip + ':3000';
+	            $scope.success = 'Panamax should be up & accessible (' + $scope.success_target_url + ')';
 	            angular.element('#success-dialog_button').trigger('click');
 	          })
 	        .catch(

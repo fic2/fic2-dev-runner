@@ -99,6 +99,10 @@ angular
 						   controller: 'AccessCtrl',
 						   resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
 						 })
+      	.when('/welcome', { templateUrl: 'views/welcome.html',
+			    controller: 'WelcomeCtrl',
+			    resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
+			  })
 		.when('/create', { templateUrl: 'views/create.html',
 						   controller: 'CreateCtrl',
 						   resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
@@ -107,7 +111,7 @@ angular
 						controller: 'MainCtrl',
 						resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
 					  })
-		.otherwise({ redirectTo: '/access' });
+		.otherwise({ redirectTo: '/welcome' });
     })
   .run(
     function ($rootScope, $location, $resource, APP_CONFIG, Endpoint) {
