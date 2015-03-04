@@ -100,8 +100,7 @@ angular
 						   resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
 						 })
       	.when('/welcome', { templateUrl: 'views/welcome.html',
-			    controller: 'WelcomeCtrl',
-			    resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
+			    controller: 'WelcomeCtrl'
 			  })
 		.when('/create', { templateUrl: 'views/create.html',
 						   controller: 'CreateCtrl',
