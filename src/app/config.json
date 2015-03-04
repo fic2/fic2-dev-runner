@@ -16,7 +16,8 @@
   "old_external-network-id": "c02a7883-ff90-4e3d-9f10-fdf2d2c0025e",
 
   "coreos": {
-    "imageId": "9a4c7d2a-8105-4f23-abd9-199296a91f7b",
+    "imageId": "8cf7c79a-89e7-40ed-ab99-1f2269d881c0",
+    "before_custom_panamax": "9a4c7d2a-8105-4f23-abd9-199296a91f7b",
     "panamax_hub_current_imageId": "9a4c7d2a-8105-4f23-abd9-199296a91f7b",
     "panamax_hub_older_backup_imageId" :"96203de3-39e5-479e-a0a2-67bfad2d52e1",
     "coreos584_imageId": "fcabe012-b577-4537-8427-e1036b0e7e67",
