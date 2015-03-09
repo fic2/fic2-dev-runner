@@ -318,25 +318,40 @@ module.exports = function (grunt) {
     // Copies remaining files to places other tasks can use
     copy: {
       dist: {
-        files: [{
-          expand: true,
-          dot: true,
-          cwd: '<%= yeoman.app %>',
-          dest: '<%= yeoman.dist %>',
-          src: [
-            '*.{ico,png,txt}',
-            '.htaccess',
-            '*.html',
-            'views/{,*/}*.html',
-            'images/{,*/}*.{webp}',
-            'fonts/{,*/}*.*'
-          ]
-        }, {
-          expand: true,
-          cwd: '.tmp/images',
-          dest: '<%= yeoman.dist %>/images',
-          src: ['generated/*']
-        }]
+        files: [
+          { expand: true,
+            dot: true,
+            cwd: '<%= yeoman.app %>',
+            dest: '<%= yeoman.dist %>',
+            src: [
+              '*.{ico,png,txt}',
+              '.htaccess',
+              '*.html',
+              'views/{,*/}*.html',
+              'images/{,*/}*.{webp}',
+              'fonts/{,*/}*.*',
+              '*.json'
+            ] },
+          { expand: true,
+            cwd: '.tmp/images',
+            dest: '<%= yeoman.dist %>/images',
+            src: ['generated/*'] },
+          { expand: true,
+            dot: true,
+            cwd: 'bower_components',
+            dest: '<%= yeoman.dist %>/bower_components',
+            src: [
+              'oauth-ng/dist/views/templates/*.html'
+            ] },
+          { expand: 'true',
+            dot: 'true',
+            cwd: 'bower_components/bootstrap-material-design/dist/fonts',
+            dest: '<%= yeoman.dist %>/fonts',
+            src: [
+              '*.{ttf,woff}',
+            ]
+          }
+        ]
       },
       styles: {
         expand: true,
