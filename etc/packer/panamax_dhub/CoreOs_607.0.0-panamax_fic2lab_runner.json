@@ -1,0 +1,34 @@
+{
+  "variables":
+    {
+      "dir": "src"
+    },
+
+  "builders":
+    [
+      {
+        "type": "openstack",
+      	"ssh_username": "core",
+      	"flavor": "3",
+      	"source_image": "921af06c-fbce-4281-8437-c8b14f45ed6b",
+      	"networks": ["7edf4710-70d1-47dc-bac5-387c46f2bcfa"],
+      	"use_floating_ip": true,
+      	"floating_ip": "193.52.45.142",
+      	"security_groups": ["default"],
+      	"image_name": "panamax_fic2lab_runner"
+      }
+    ],
+
+  "provisioners":
+    [
+      {
+        "type": "file",
+  	"source": "{{user `dir`}}",
+  	"destination": "/home/core"
+      },
+      {
+        "type": "shell",
+	"inline": "cd /home/core/{{user `dir`}} && ./install.sh && sync"
+      }
+    ]
+}
