@@ -11,6 +11,34 @@ angular.module('srcApp')
     function() {
 
       var toObject = function() {
+        var buildNginxServerConf = function(port, up) {
+          return [
+	    'server {',
+	    'rewrite_log on;',
+	    'listen       ' + port + ' ssl;',
+	    'server_name  localhost;',
+	    'error_page 497  https://$host:$server_port$request_uri;',
+	    'ssl on;',
+	    'ssl_certificate      /etc/nginx/cert/server.crt;',
+	    'ssl_certificate_key  /etc/nginx/cert/server.key;',
+	    'ssl_session_cache shared:SSL:1m;',
+	    'ssl_session_timeout  5m;',
+	    'ssl_ciphers  HIGH:!aNULL:!MD5;',
+	    'ssl_prefer_server_ciphers   on;',
+	    'location / {',
+	    'proxy_pass http://' + up + ';',
+	    'proxy_set_header Host $host; # nginx public ip',
+	    'proxy_set_header X-Forwarded-Host $http_host; # same as the request HTTP_HOST',
+	    'proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; # browser ip',
+	    'proxy_set_header X-Forwarded-Proto $scheme;',
+	    'proxy_set_header X-Real-IP $remote_addr;',
+	    '# add_header "Access-Control-Allow-Origin" "*";',
+	    '# add_header "Access-Control-Allow-Methods" "*";',
+	    '}',
+	    '}'
+          ];
+        };
+
 	return {
 	  users: [
 	    { name: 'core',
@@ -31,30 +59,12 @@ angular.module('srcApp')
 		'upstream up_panamax_api {',
 		'server PMX_API:3000;',
 		'}',
-		'server {',
-		'rewrite_log on;',
-		'listen       6001 ssl;',
-		'server_name  localhost;',
-		'error_page 497  https://$host:$server_port$request_uri;',
-		'ssl on;',
-		'ssl_certificate      /etc/nginx/cert/server.crt;',
-		'ssl_certificate_key  /etc/nginx/cert/server.key;',
-		'ssl_session_cache shared:SSL:1m;',
-		'ssl_session_timeout  5m;',
-		'ssl_ciphers  HIGH:!aNULL:!MD5;',
-		'ssl_prefer_server_ciphers   on;',
-		'location / {',
-		'proxy_pass http://up_panamax_api;',
-		'proxy_set_header Host $host; # nginx public ip',
-		'proxy_set_header X-Forwarded-Host $http_host; # same as the request HTTP_HOST',
-		'proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; # browser ip',
-		'proxy_set_header X-Forwarded-Proto $scheme;',
-		'proxy_set_header X-Real-IP $remote_addr;',
-		'# add_header "Access-Control-Allow-Origin" "*";',
-		'# add_header "Access-Control-Allow-Methods" "*";',
-		'}',
+		'upstream up_panamax_ui {',
+		'server PMX_UI:3000;',
 		'}'
-	      ].join('\n')   
+	      ].concat(buildNginxServerConf(6001, 'up_panamax_api'))
+              .concat(buildNginxServerConf(6002, 'up_panamax_ui'))
+              .join('\n')
 	    }
 	  ],
 	  coreos: {
@@ -172,7 +182,7 @@ angular.module('srcApp')
 		  '[Service]',
 		  'ExecStartPre=-/usr/bin/docker kill PMX_API_NGINX',
 		  'ExecStartPre=-/usr/bin/docker rm -f PMX_API_NGINX',
-		  'ExecStart=/usr/bin/docker run --name=PMX_API_NGINX --rm=true -t -v /dev/urandom:/dev/random -v /home/core/hub.conf:/etc/nginx/sites-enabled/hub.conf --link=PMX_API:PMX_API -e 6001 -p 6001:6001 cgeoffroy/nginx-auto_cert:latest',
+		  'ExecStart=/usr/bin/docker run --name=PMX_API_NGINX --rm=true -t -v /dev/urandom:/dev/random -v /home/core/hub.conf:/etc/nginx/sites-enabled/hub.conf --link=PMX_API:PMX_API --link=PMX_UI:PMX_UI -e 6001 -p 6001:6001 -e 6002 -p 6002:6002 cgeoffroy/nginx-auto_cert:latest',
 		  'ExecStop=/usr/bin/docker stop PMX_API_NGINX',
 		  'Restart=always',
 		  '[Install]',

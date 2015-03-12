@@ -89,4 +89,26 @@ angular.module('srcApp')
       };      
 
       return builder;
+    })
+  .factory(
+    'panamaxUiFactory',
+    function($q, $resource) {
+
+      var builder = function(panamaxUiUrl, targetIp, targetPort){
+	var headers = { 'Target-Ip': targetIp, 'Target-Port': targetPort };
+	var actions = { get: { method: 'GET', headers: headers },
+			query: { method: 'GET', headers: headers, isArray: true },
+			save: {method: 'POST', headers: headers} };
+
+	var index = function() {
+          return $resource(panamaxUiUrl + '/search/new',  {}, actions);
+	};
+
+        return {
+          index: index
+        };
+      };
+
+      return builder;
     });
+

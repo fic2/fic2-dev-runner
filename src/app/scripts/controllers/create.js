@@ -14,7 +14,7 @@
 angular.module('srcApp')
   .controller(
 	  'CreateCtrl',
-	  function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep, coreos, panamaxFactory) {
+	  function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep, coreos, panamaxFactory, panamaxUiFactory) {
 
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       $scope.targetSeName = $routeParams.seKeyName;
@@ -171,7 +171,7 @@ angular.module('srcApp')
         };
 
         var addingSecurityGroupRules = function(groupId){
-	        var ports = [80, 8080, 22, 443, 3000, 3001, 3002, 6001, 8000];
+	        var ports = [80, 8080, 22, 443, 3000, 3001, 3002, 6002, 6001, 8000];
 	        var promises = ports.map(
 	          function(port){
 	            return os.createSecurityGroupRule('TCP', port, port, '0.0.0.0/0', groupId)
@@ -449,6 +449,21 @@ angular.module('srcApp')
 	          );
         };
 
+        var waitForPanamaxUi = function() {
+          var sub = function() {
+            return $scope.panamaxUi.index().get().$promise;
+          };
+
+          $scope.panamaxUi = panamaxUiFactory($location.protocol() + '://' + $location.host() + '/__proxy', $scope.floatingIp.ip, 6002);
+          return retriesWithDelay(sub, 30, 4000)
+            .catch(
+              function(cause) {
+                $scope.failure = 'The function for checking panamax UI timed out';
+		return $q.reject(cause);
+              }
+            );
+        };
+
         var fetchPmxTemplates = function() {
 	        var name = 'Social Network SE';
 	        var sub = function() {
@@ -530,6 +545,7 @@ angular.module('srcApp')
 	        .then(wrap('Associating the floating ip to the newly created instance', tryToAssociateIp))
 	        .then(wrap('Waiting for Panamax', waitForPanamax))
 	        .then(wrap('Injecting the SE repository', injectTemplatesRepo))
+                .then(wrap('Waiting for the Panamax UI', waitForPanamaxUi))
 	        //.then(wrap('Fetching the Panamax templates', fetchPmxTemplates))
 	        //.then(wrap('Starting the SE\'s template', launchTemplate))
 	        .then(
