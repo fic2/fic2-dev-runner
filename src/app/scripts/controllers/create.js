@@ -501,7 +501,48 @@ angular.module('srcApp')
 	              return $q.reject(cause);
 	            });
         };
-        
+
+        var checkQuotas = function() {
+          var sub = function() {
+            return os.getQuotaList($scope.tenantData.id);
+          };
+          var verifyQuotas = function(quotas) {
+            var cause = '';
+            if (quotas.floating_ips <= 0) {
+              cause += 'The quota of floating ips is <= 0. On the FIWARE platform, the floating ips are strongly regulated.'
+                + 'You must send an email to the FIWARE Lab administrator to requestion some public ips.';
+            }
+            if (quotas.cores <= 0 || quotas.instances <= 0) {
+              cause += 'The quotas of cores or instances are <= 0.';
+            }
+            if (quotas.ram <= 0) {
+              cause += 'The quota of ram is <= 0.';
+            }
+            if (quotas.security_groups <= 0 || quotas.security_group_rules <= 0) {
+              cause += 'The quotas of security groups or security rules are <= 0.';
+            }
+            if (cause) {
+              $scope.failure = 'Not enough quotas';
+              cause += '  (' + JSON.stringify(quotas, null, 1) +  ')';
+              return $q.reject(cause);
+            }
+          };
+
+          return retriesWithDelay(sub, 3, 750)
+            .then(
+              function(data) {
+                $scope.quotas = data.quota_set;
+                return $scope.quotas;
+              }
+            )
+            .catch(
+              function(cause) {
+                $scope.failure = 'Cannot fetch quotas';
+                return $q.reject(cause);
+              })
+            .then(verifyQuotas);
+        };
+
         var start = function(oauth_access_token) {
 	        var sub = function() {
 	          return os.loadTenant(oauth_access_token);;
@@ -520,6 +561,7 @@ angular.module('srcApp')
 	        .then(wrap('Authenticating with Keystone', os.authenticateWithKeystone))
 	        .then(function(accessData){
 		        $scope.tenantData = accessData.access.token.tenant; return null;})
+                .then(wrap('Checking quotas', checkQuotas))
 	        .then(wrap('Verifying the external network existence', getAndSaveExternalNetwork))
 	        .then(function(){
 		        return APP_CONFIG.coreos.imageId;})

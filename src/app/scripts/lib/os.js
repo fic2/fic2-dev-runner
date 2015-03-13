@@ -297,7 +297,14 @@ angular.module('srcApp')
 	JSTACK.Nova.getserverdetail(serverId, deferred.resolve, deferred.reject, region);
 	return deferred.promise;	
       };
- 
+
+
+      var getQuotaList = function(tenantId){
+	var deferred = $q.defer();
+	JSTACK.Nova.getquotalist(tenantId, deferred.resolve, deferred.reject, region);
+	return deferred.promise;
+      };
+
 
       return {
 	createName: createName,
@@ -323,7 +330,8 @@ angular.module('srcApp')
 	getFloatingIps: getFloatingIps,
 	allocateFloatingIp: allocateFloatingIp,
 	associateFloatingIp: associateFloatingIp,
-	getServerDetail: getServerDetail
+	getServerDetail: getServerDetail,
+        getQuotaList: getQuotaList
       };
     }
   );
