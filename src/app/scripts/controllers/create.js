@@ -406,25 +406,17 @@ angular.module('srcApp')
         };
         
         var waitForPanamax = function() {
-	        var sub = function(counter) {
-	          if (counter <= 0) {
-	            $scope.failure = 'The function for checking panamax timed out';
-	            return $q.reject('TimeOut');
-	          }
-	          return $timeout(function(){ return $scope.panamax.misc.Types().query().$promise; }, 10000)
-	          //return $scope.panamax.misc.Types().get().$promise
-	            .catch(
-	              function(cause) {
-		              $scope.r = $resource;
-		              //debugger; // jshint ignore: line
-		              if (cause.status == 0 || cause.status == 502) {
-		                return sub(counter - 1);
-		              }
-		              return $q.reject(cause);
-	              });	  
-	        };
-	        $scope.panamax = panamaxFactory($location.protocol() + '://' + $location.host() + '/__proxy', $scope.floatingIp.ip, 6001);
-	        return sub(25);	
+          var sub = function() {
+            return $scope.panamax.misc.Types().query().$promise;
+          };
+
+          $scope.panamax = panamaxFactory($location.protocol() + '://' + $location.host() + '/__proxy', $scope.floatingIp.ip, 6001);
+          return retriesWithDelay(sub, 30, 4000)
+            .catch(
+              function(cause) { //cause.status == 0 || cause.status == 502
+                $scope.failure = 'The function for checking the panamax api timed out';
+	        return $q.reject('TimeOut');
+              });
         };
 
         var injectTemplatesRepo = function() {
