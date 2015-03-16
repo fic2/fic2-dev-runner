@@ -305,6 +305,24 @@ angular.module('srcApp')
 	return deferred.promise;
       };
 
+      var deleteServer = function(serverId) {
+	var deferred = $q.defer();
+	JSTACK.Nova.deleteserver(serverId, deferred.resolve, deferred.reject, region);
+	return deferred.promise;
+      };
+
+      var releaseFloatingIp = function(floatingIpId) {
+	var deferred = $q.defer();
+	JSTACK.Nova.releasefloatingIP(floatingIpId, deferred.resolve, deferred.reject, region);
+	return deferred.promise;
+      };
+
+      var deleteSecurityGroup = function(secGroupId) {
+	var deferred = $q.defer();
+	JSTACK.Nova.deletesecuritygroup(secGroupId, deferred.resolve, deferred.reject, region);
+	return deferred.promise;
+      };
+
 
       return {
 	createName: createName,
@@ -331,7 +349,10 @@ angular.module('srcApp')
 	allocateFloatingIp: allocateFloatingIp,
 	associateFloatingIp: associateFloatingIp,
 	getServerDetail: getServerDetail,
-        getQuotaList: getQuotaList
+        getQuotaList: getQuotaList,
+	deleteServer: deleteServer,
+        releaseFloatingIp: releaseFloatingIp,
+        deleteSecurityGroup: deleteSecurityGroup
       };
     }
   );
