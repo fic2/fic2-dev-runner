@@ -54,15 +54,15 @@ angular
       return function() {
         var deferred = $q.defer();
         var logged = !!AccessToken.get();
-		console.log('loginRequiredFactory, logged=' + logged);
-		if(! logged) {
+	console.log('loginRequiredFactory, logged=' + logged);
+	if(! logged) {
           deferred.reject('Not logged');
-		  //return Endpoint.redirect();
-		} else {
-		  console.log('loginRequiredFactory, access=', AccessToken.get());
+	  //return Endpoint.redirect();
+	} else {
+	  console.log('loginRequiredFactory, access=', AccessToken.get());
           deferred.resolve(AccessToken.get());
-		}
-		return deferred.promise;
+	}
+	return deferred.promise;
       };
     })
   .factory(
@@ -113,17 +113,25 @@ angular
 		.otherwise({ redirectTo: '/welcome' });
     })
   .run(
-    function ($rootScope, $location, $resource, APP_CONFIG, Endpoint) {
+    function ($rootScope, $location, $resource, APP_CONFIG, Endpoint, $sessionStorage) {
       $rootScope.OAuthConfig = APP_CONFIG;
 
-	  $rootScope.$on("$routeChangeError", 
-					 function (event, current, previous, rejection) {
-					   console.log(event, current, previous, rejection);
-					   if (rejection === 'Not logged') {
-						 Endpoint.redirect();
-					   }
-					 });
-      
+      $rootScope.$on("$routeChangeError", 
+		     function (event, current, previous, rejection) {
+		       console.log(event, current, previous, rejection);
+		       if (rejection === 'Not logged') {
+                         $sessionStorage.target = current;
+			 Endpoint.redirect();
+		       }
+		     });
+
+      console.warn($sessionStorage.target);
+      if ($sessionStorage.target) {
+        var t = $sessionStorage.target.loadedTemplateUrl;
+        delete $sessionStorage.target;
+        $location.path(t.substr(0, t.length-5).substr(5));
+      };
+
       // $rootScope.$on(
       // 	'$viewContentLoaded', function(){
       // 	  $.material.init();
