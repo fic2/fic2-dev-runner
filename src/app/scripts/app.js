@@ -110,6 +110,10 @@ angular
 						controller: 'MainCtrl',
 						resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
 					  })
+      	.when('/delete', { templateUrl: 'views/delete.html',
+			    controller: 'DeleteCtrl',
+                           resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
+			  })
 		.otherwise({ redirectTo: '/welcome' });
     })
   .run(
