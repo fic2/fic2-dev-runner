@@ -12,13 +12,13 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker.socket docker.service
 
 
-docker pull google/cadvisor:latest && sync && sleep 1s
-docker pull fic2/panamax-api && sync && sleep 1s
-docker pull fic2/panamax-ui && sync && sleep 1s
-docker pull cgeoffroy/nginx-auto_cert && sync && sleep 1s
-docker pull fic2/ppnet && sync && sleep 1s
-docker pull mysql && sync && sleep 1s
-docker pull wordpress && sync && sleep 1s
+docker pull fic2/panamax-ui && sync && sleep 15s
+docker pull google/cadvisor:latest && sync && sleep 15s
+docker pull fic2/panamax-api && sync && sleep 15s
+docker pull cgeoffroy/nginx-auto_cert && sync && sleep 15s
+docker pull fic2/ppnet && sync && sleep 15s
+docker pull mysql && sync && sleep 15s
+docker pull wordpress && sync && sleep 15s
 
 
 sudo mkdir -p /etc/systemd/journald.conf.d
