@@ -171,14 +171,19 @@ angular.module('srcApp')
         };
 
         var addingSecurityGroupRules = function(groupId){
-	        var ports = [80, 8080, 22, 443, 3000, 3001, 3002, 6002, 6001, 8000];
+	        var ports = [[80], [8080], [22], [443], [3000], [3001], [3002], [6002], [6001], [8000], [49000, 52000]];
 	        var promises = ports.map(
 	          function(port){
-	            return os.createSecurityGroupRule('TCP', port, port, '0.0.0.0/0', groupId)
+                    var portFrom = port[0];
+                    var portTo = portFrom;
+                    if (port.length > 1) {
+                      portTo = port[1];
+                    }
+	            return os.createSecurityGroupRule('TCP', portFrom, portTo, '0.0.0.0/0', groupId)
 	              .catch(
 		              function(cause){
 		                if ('message' in cause && cause.message === '404 Error') {
-		                  console.info('Rules ' + port + ' already exists');
+		                  console.info('Rules ' + portFrom + ':' + portTo + ' already exists');
 		                  return cause;
 		                }
 		                return $q.reject(cause);
