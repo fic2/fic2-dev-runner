@@ -568,4 +568,7 @@ angular.module('srcApp')
 	    angular.element('#failure-dialog_button').trigger('click');
 	    console.error(cause);
 	  });
+
+      $scope.close_modal = function() { angular.element('.modal-backdrop').hide(); angular.element('.modal-backdrop').remove(); };
+
     });

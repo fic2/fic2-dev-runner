@@ -122,6 +122,9 @@ angular.module('srcApp')
             })
             .then(function(securityGroupsData){return securityGroupsData.security_groups;})
             .then(os.getByNameFactory(name))
+            .then(null, function(cause) {
+              return null;
+            })
             .then(
               function(securityGroupData) {
                 if (! securityGroupData) {
@@ -216,6 +219,7 @@ angular.module('srcApp')
       };
 
       $scope.deletion = deletion;
+      $scope.close_modal = function() { angular.element('.modal-backdrop').hide(); angular.element('.modal-backdrop').remove(); };
 
       return null;
     });

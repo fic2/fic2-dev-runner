@@ -604,6 +604,7 @@ angular.module('srcApp')
       };
 
       $scope.create = create;
+      $scope.close_modal = function() { angular.element('.modal-backdrop').hide(); angular.element('.modal-backdrop').remove(); };
 
 	    return null;
 	  });
