@@ -6,26 +6,20 @@ set -x
 # mkdir -p /home/core/.ssh
 # cat id_rsa.pub >> /home/core/.ssh/authorized_keys
 
-sudo mkdir -p /etc/systemd/system/docker.service.d
-sudo cp 50-insecure-registry.conf /etc/systemd/system/docker.service.d/
-sudo systemctl daemon-reload
-sudo systemctl restart docker.socket docker.service
+#sudo mkdir -p /etc/systemd/system/docker.service.d
+#sudo cp 50-insecure-registry.conf /etc/systemd/system/docker.service.d/
+#sudo systemctl daemon-reload
+#sudo systemctl restart docker.socket docker.service
 
 
-docker pull fic2/panamax-ui && sync && sleep 15s
-docker pull google/cadvisor:latest && sync && sleep 15s
-docker pull fic2/panamax-api && sync && sleep 15s
-docker pull cgeoffroy/nginx-auto_cert && sync && sleep 15s
-docker pull fic2/ppnet && sync && sleep 15s
-docker pull mysql && sync && sleep 15s
-docker pull wordpress && sync && sleep 15s
+./pulls.sh
 
 
 sudo mkdir -p /etc/systemd/journald.conf.d
 sudo cp 50-limit-journal-size.conf /etc/systemd/journald.conf.d
 sudo rm -rf /etc/systemd/system/docker.service.d
 sudo systemctl daemon-reload
-sudo systemctl restart docker.socket docker.service
+#sudo systemctl restart docker.socket docker.service
 
 
 sudo rm -rf /home/core/.ssh/* /root/.ssh/*
