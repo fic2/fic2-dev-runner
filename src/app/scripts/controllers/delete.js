@@ -122,12 +122,11 @@ angular.module('srcApp')
             })
             .then(function(securityGroupsData){return securityGroupsData.security_groups;})
             .then(os.getByNameFactory(name))
-            .then(null, function(cause) {
-              console.info('The security group was already deleted');
-              return null;
-            })
             .then(
               function(securityGroupData) {
+                if (! securityGroupData) {
+                  return null;
+                }
                 var f = function() { return os.deleteSecurityGroup(securityGroupData.id); };
                 return retriesWithDelay(f, 3, 750)
                   .then(null, function(cause) {
