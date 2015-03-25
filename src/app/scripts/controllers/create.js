@@ -416,7 +416,7 @@ angular.module('srcApp')
           };
 
           $scope.panamax = panamaxFactory($location.protocol() + '://' + $location.host() + '/__proxy', $scope.floatingIp.ip, 6001);
-          return retriesWithDelay(sub, 30, 4000)
+          return retriesWithDelay(sub, 60, 4000)
             .catch(
               function(cause) { //cause.status == 0 || cause.status == 502
                 $scope.failure = 'The function for checking the panamax api timed out';
