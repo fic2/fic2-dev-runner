@@ -30,7 +30,8 @@ JSTACK.Neutron = (function(JS, undefined) {
     var params, check, configure, getnetworkslist, createnetwork, updatenetwork, getnetworkdetail, deletenetwork,
     getsubnetslist, createsubnet, updatesubnet, getsubnetdetail, deletesubnet,
     getportslist, createport, updateport, getportdetail, deleteport, getrouterslist, createrouter, updaterouter,
-    getrouterdetail, deleterouter, addinterfacetorouter, removeinterfacefromrouter;
+    getrouterdetail, deleterouter, addinterfacetorouter, removeinterfacefromrouter,
+    getquotadetail;
 
     // This modules stores the `url`to which it will send every
     // request. 
@@ -816,6 +817,27 @@ JSTACK.Neutron = (function(JS, undefined) {
         JS.Comm.put(url, data, JS.Keystone.params.token, onOK, onError);
     };
 
+    getquotadetail = function(tenant_id, callback, error, region) {
+        var url, onOK, onError;
+        if (!check(region)) {
+            return;
+        }
+        url = params.url + 'v2.0/quotas/' + tenant_id;
+
+        onOK = function(result) {
+            if (callback !== undefined) {
+                callback(result.quota);
+            }
+        };
+        onError = function(message) {
+            if (error !== undefined) {
+                error(message);
+            }
+        };
+
+        JS.Comm.get(url, JS.Keystone.params.token, onOK, onError);
+    };
+
     // Public Functions and Variables
     // ------------------------------
     // This is the list of available public functions and variables
@@ -844,7 +866,8 @@ JSTACK.Neutron = (function(JS, undefined) {
         getrouterdetail :getrouterdetail,
         deleterouter : deleterouter,
         addinterfacetorouter : addinterfacetorouter,
-        removeinterfacefromrouter : removeinterfacefromrouter
+        removeinterfacefromrouter : removeinterfacefromrouter,
+        getquotadetail: getquotadetail
     };
 
 }(JSTACK));
