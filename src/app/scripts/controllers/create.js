@@ -499,16 +499,12 @@ angular.module('srcApp')
 	            });
         };
 
-        var checkQuotas = function() {
+        var checkNovaQuotas = function() {
           var sub = function() {
             return os.getQuotaList($scope.tenantData.id);
           };
           var verifyQuotas = function(quotas) {
             var cause = '';
-            if (quotas.floating_ips <= 0) {
-              cause += 'The quota of floating ips is <= 0. On the FIWARE platform, the floating ips are strongly regulated.'
-                + 'You must send an email to the FIWARE Lab administrator to requestion some public ips.';
-            }
             if (quotas.cores <= 0 || quotas.instances <= 0) {
               cause += 'The quotas of cores or instances are <= 0.';
             }
@@ -534,10 +530,36 @@ angular.module('srcApp')
             )
             .catch(
               function(cause) {
-                $scope.failure = 'Cannot fetch quotas';
+                $scope.failure = 'Cannot fetch Nova quotas';
                 return $q.reject(cause);
               })
             .then(verifyQuotas);
+        };
+
+
+        var checkNeutronQuotas = function() {
+          var sub = function() {
+            return os.getQuotaDetail($scope.tenantData.id);
+          };
+
+          var verifyQuota = function(quota) {
+            if (quota.floatingip && quota.floatingip >= 1) {
+              return null;
+            } else {
+              $scope.failure = 'Not enough ip quota in Neutron';
+              return $q.reject(JSON.stringify(quota, null, 1));
+            }
+          };
+
+          return retriesWithDelay(sub, 3, 750)
+            .then(null, function(cause) {
+              $scope.failure = 'Cannot fetch Neutron quotas';
+              return $q.reject(cause);
+            })
+            .then(function(data) {
+              $scope.neutronQuotas = data;
+              return verifyQuota(data);
+            });
         };
 
         var start = function(oauth_access_token) {
@@ -558,7 +580,8 @@ angular.module('srcApp')
 	        .then(wrap('Authenticating with Keystone', os.authenticateWithKeystone))
 	        .then(function(accessData){
 		        $scope.tenantData = accessData.access.token.tenant; return null;})
-                .then(wrap('Checking quotas', checkQuotas))
+                .then(wrap('Checking Nova quotas', checkNovaQuotas))
+                .then(wrap('Checking Neutron quotas', checkNeutronQuotas))
 	        .then(wrap('Verifying the external network existence', getAndSaveExternalNetwork))
 	        .then(function(){
 		        return APP_CONFIG.coreos.imageId;})
@@ -566,7 +589,7 @@ angular.module('srcApp')
 	        .catch(
 	          function(cause) {
 	            if (typeof cause === 'object' && 'message' in cause && cause.message === '404 Error') {
-	              $scope.failure = 'The SE\'s image is missing.';
+	              $scope.failure = 'The custom panamax image "' + APP_CONFIG.coreos.imageId + '" is missing.';
 	            }
 	            return $q.reject(cause);
 	          }

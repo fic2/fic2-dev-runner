@@ -323,6 +323,12 @@ angular.module('srcApp')
 	return deferred.promise;
       };
 
+      var getQuotaDetail = function(tenantId) {
+	var deferred = $q.defer();
+	JSTACK.Neutron.getquotadetail(tenantId, deferred.resolve, deferred.reject, region);
+	return deferred.promise;
+      };
+
 
       return {
 	createName: createName,
@@ -352,7 +358,8 @@ angular.module('srcApp')
         getQuotaList: getQuotaList,
 	deleteServer: deleteServer,
         releaseFloatingIp: releaseFloatingIp,
-        deleteSecurityGroup: deleteSecurityGroup
+        deleteSecurityGroup: deleteSecurityGroup,
+        getQuotaDetail: getQuotaDetail
       };
     }
   );
