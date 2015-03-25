@@ -9,6 +9,7 @@
       {
         "type": "openstack",
       	"ssh_username": "core",
+        "ssh_timeout": "7m",
       	"flavor": "3",
       	"source_image": "921af06c-fbce-4281-8437-c8b14f45ed6b",
       	"networks": ["7edf4710-70d1-47dc-bac5-387c46f2bcfa"],

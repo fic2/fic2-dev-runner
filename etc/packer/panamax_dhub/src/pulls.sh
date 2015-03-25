@@ -2,14 +2,14 @@
 
 set -x
 
-function pull {
+function loop {
     local F=$(mktemp)
     for i in $(seq 1 5); do
         echo '' > $F
-        echo "$i: pulling $1"
-        docker pull $1 2>&1 | tee $F
+        echo "$i: $1 '$2'"
+        docker $1 $2 2>&1 | tee $F
         echo "sync ..."
-        sync
+        time sync
         if grep 'EOF' $F; then
             continue
         else
@@ -19,10 +19,14 @@ function pull {
     rm $F
 }
 
-pull fic2/panamax-ui
-pull google/cadvisor:latest
-pull fic2/panamax-api
-pull cgeoffroy/nginx-auto_cert
-pull fic2/ppnet
-pull mysql
-pull wordpress
+loop images ''
+
+loop pull fic2/panamax-ui
+loop pull google/cadvisor:latest
+loop pull fic2/panamax-api
+loop pull cgeoffroy/nginx-auto_cert
+loop pull fic2/ppnet
+loop pull mysql
+loop pull wordpress
+
+loop images ''
