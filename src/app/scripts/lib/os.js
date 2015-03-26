@@ -8,9 +8,11 @@
 angular.module('srcApp')
   .factory(
     'os',
-    function($q, $resource, AccessToken, Endpoint, APP_CONFIG) {
+    function($q, $resource, AccessToken, Endpoint, APP_CONFIG, regionSetupFactory) {
       var oauth_creds = AccessToken.get();
-      var region = 'Lannion';
+      var getRegion = function() {
+        return regionSetupFactory.getCurrentRegion();
+      };
 
       if (! (!!oauth_creds)) {
 	return Endpoint.redirect();
@@ -119,7 +121,7 @@ angular.module('srcApp')
 
       var fetchNovaServers = function(){
 	var deferred = $q.defer();
-	JSTACK.Nova.getserverlist(true, false, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.getserverlist(true, false, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise
 	  .then(function(servers_data){console.log(servers_data); return servers_data;});
       };
@@ -127,7 +129,7 @@ angular.module('srcApp')
       var getImageDetails = function(imageId){
 	var sub = function(counter, imageId){
 	  var deferred = $q.defer();
-	  JSTACK.Nova.getimagedetail(imageId, deferred.resolve, deferred.reject, region);
+	  JSTACK.Nova.getimagedetail(imageId, deferred.resolve, deferred.reject, getRegion());
 	  return deferred.promise
 	    .catch(
 	      function(cause){
@@ -145,13 +147,13 @@ angular.module('srcApp')
 
       var getNetworksList = function(){
 	var deferred = $q.defer();
-	JSTACK.Neutron.getnetworkslist(deferred.resolve, deferred.reject, region);
+	JSTACK.Neutron.getnetworkslist(deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var getNetworkDetail = function(networkId) {
 	var deferred = $q.defer();
-	JSTACK.Neutron.getnetworkdetail(networkId, deferred.resolve, deferred.reject, region);
+	JSTACK.Neutron.getnetworkdetail(networkId, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
@@ -185,13 +187,13 @@ angular.module('srcApp')
 
       var createNetwork = function(name, tenantId){
 	var deferred = $q.defer();
-	JSTACK.Neutron.createnetwork(name, true, false, tenantId, deferred.resolve, deferred.reject, region);
+	JSTACK.Neutron.createnetwork(name, true, false, tenantId, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var getSubNetworksList = function(){
 	var deferred = $q.defer();
-	JSTACK.Neutron.getsubnetslist(deferred.resolve, deferred.reject, region);
+	JSTACK.Neutron.getsubnetslist(deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
@@ -206,7 +208,7 @@ angular.module('srcApp')
 	  JSTACK.Neutron.createsubnet(networkId, cidr, name, allocPools,
 				     tenantId, base + '.1', 4, true, ['8.8.8.8'],
 				      null, deferred.resolve,
-				      deferred.reject, region);
+				      deferred.reject, getRegion());
 	  return deferred.promise
 	    .catch(
 	      function(cause){
@@ -226,106 +228,106 @@ angular.module('srcApp')
 
       var createRouter = function(name, externalNetworkId, tenantId){
 	var deferred = $q.defer();
-	JSTACK.Neutron.createrouter(name, true, externalNetworkId, tenantId, deferred.resolve, deferred.reject, region);
+	JSTACK.Neutron.createrouter(name, true, externalNetworkId, tenantId, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var getRoutersList = function(){
 	var deferred = $q.defer();
-	JSTACK.Neutron.getrouterslist(deferred.resolve, deferred.reject, region);
+	JSTACK.Neutron.getrouterslist(deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var getSecurityGroupList = function(){
 	var deferred = $q.defer();
-	JSTACK.Nova.getsecuritygrouplist(deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.getsecuritygrouplist(deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;	
       };
 
       var createSecurityGroup = function(name){
 	var deferred = $q.defer();
-	JSTACK.Nova.createsecuritygroup(name, 'Created by the DHub application', deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.createsecuritygroup(name, 'Created by the DHub application', deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;	
       };
       
       var getSecurityGroupDetail = function(securityGroupId){
 	var deferred = $q.defer();
-	JSTACK.Nova.getsecuritygroupdetail(securityGroupId, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.getsecuritygroupdetail(securityGroupId, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;	
       };
 
       var createSecurityGroupRule = function(ipProtocol, fromPort, toPort, cidr, groupId){
 	var deferred = $q.defer();
-	JSTACK.Nova.createsecuritygrouprule(ipProtocol, fromPort, toPort, cidr, null, groupId, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.createsecuritygrouprule(ipProtocol, fromPort, toPort, cidr, null, groupId, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;	
       };
 
       var createServer = function(name, imageId, userData, securityGroupId, networkId){
 	var deferred = $q.defer();
 	var flavorId = '3';
-	JSTACK.Nova.createserver(name, imageId, flavorId, null, userData, [securityGroupId], 1, 1, null, [{'uuid': networkId}], '', null, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.createserver(name, imageId, flavorId, null, userData, [securityGroupId], 1, 1, null, [{'uuid': networkId}], '', null, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
       
       var addInterfaceToRouter = function(routerId, subnetId){
 	var deferred = $q.defer();
 	var undf;
-	JSTACK.Neutron.addinterfacetorouter(routerId, subnetId, undf, deferred.resolve, deferred.reject, region);
+	JSTACK.Neutron.addinterfacetorouter(routerId, subnetId, undf, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var getFloatingIps = function(){
 	var deferred = $q.defer();
-	JSTACK.Nova.getfloatingIPs(deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.getfloatingIPs(deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var allocateFloatingIp = function(pool){
 	var deferred = $q.defer();
-	JSTACK.Nova.allocatefloatingIP(pool, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.allocatefloatingIP(pool, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var associateFloatingIp = function(serverId, address){
 	var deferred = $q.defer();
-	JSTACK.Nova.associatefloatingIP(serverId, address, null, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.associatefloatingIP(serverId, address, null, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var getServerDetail = function(serverId) {
 	var deferred = $q.defer();
-	JSTACK.Nova.getserverdetail(serverId, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.getserverdetail(serverId, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;	
       };
 
 
       var getQuotaList = function(tenantId){
 	var deferred = $q.defer();
-	JSTACK.Nova.getquotalist(tenantId, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.getquotalist(tenantId, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var deleteServer = function(serverId) {
 	var deferred = $q.defer();
-	JSTACK.Nova.deleteserver(serverId, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.deleteserver(serverId, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var releaseFloatingIp = function(floatingIpId) {
 	var deferred = $q.defer();
-	JSTACK.Nova.releasefloatingIP(floatingIpId, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.releasefloatingIP(floatingIpId, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var deleteSecurityGroup = function(secGroupId) {
 	var deferred = $q.defer();
-	JSTACK.Nova.deletesecuritygroup(secGroupId, deferred.resolve, deferred.reject, region);
+	JSTACK.Nova.deletesecuritygroup(secGroupId, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 
       var getQuotaDetail = function(tenantId) {
 	var deferred = $q.defer();
-	JSTACK.Neutron.getquotadetail(tenantId, deferred.resolve, deferred.reject, region);
+	JSTACK.Neutron.getquotadetail(tenantId, deferred.resolve, deferred.reject, getRegion());
 	return deferred.promise;
       };
 

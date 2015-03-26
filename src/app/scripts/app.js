@@ -82,6 +82,31 @@ angular
       
     }
   )
+  .factory(
+    'regionSetupFactory',
+    function($sessionStorage) {
+      var config = {
+        default_: 'Lannion',
+        regions: ['Lannion', 'Spain2', 'Berlin']
+      };
+
+      var getPossibleRegions = function() {
+        return config.regions;
+      }
+
+      var getCurrentRegion = function() {
+        if (! $sessionStorage.regionSetup) {
+          $sessionStorage.regionSetup = config.default_;
+        }
+        return $sessionStorage.regionSetup || config.default_;
+      };
+
+      return {
+        getCurrentRegion: getCurrentRegion,
+        getPossibleRegions: getPossibleRegions
+      };
+    }
+  )
   .config(
     function ($provide, $routeProvider, $locationProvider, $sceProvider) {
       $sceProvider.enabled(false);
