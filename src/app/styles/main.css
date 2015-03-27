@@ -10,3 +10,20 @@ body {
 .big-icons {
   font-size: 30pt;
 }
+
+#menu-form-region_bis {
+  padding: 10px 0px 0px 0px;
+}
+
+#menu-form-region_bis > span {
+  color: lightgray;
+}
+
+#menu-form-region_bis option {
+  color: gray;
+}
+
+#menu-form-select {
+  width: auto;
+  display: inline-block;
+}

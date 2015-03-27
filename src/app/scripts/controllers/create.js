@@ -14,12 +14,13 @@
 angular.module('srcApp')
   .controller(
 	  'CreateCtrl',
-	  function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep, coreos, panamaxFactory, panamaxUiFactory) {
+	  function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep, coreos, panamaxFactory, panamaxUiFactory, regionSetupFactory) {
 
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       $scope.targetSeName = $routeParams.seKeyName;
       $scope.failure = 'An error occured';
       $scope.instance_name = '_dhub_generated_panamax';
+      $scope.regionSetupFactory = regionSetupFactory;
       var oauth_creds = loginRequired;
 
       var create = function () {

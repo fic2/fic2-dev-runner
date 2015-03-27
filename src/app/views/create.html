@@ -14,6 +14,15 @@
             <li><a href="#"><span class="glyphicon glyphicon-wrench"></span>Repair</a></li>
             <li><a href="/delete"><span class="glyphicon glyphicon-wrench"></span>Delete</a></li>
         </ul>
+        <form id="menu-form-region_bis" class="navbar-form navbar-left">
+          <span>Region:</span>
+            <select class="form-control col-lg-8" id="menu-form-select_bis">
+              <option>Lannion</option>
+              <option>Waterford</option>
+              <option>Berlin</option>
+              <option>Spain2</option>
+            </select>
+        </form>
     </div>
 </div>
 
@@ -35,6 +44,19 @@
 			</button>
 
 			<!-- <a href="#" class="btn btn-success"><i class="mdi-av-play-circle-fill .icons-material"></i> Start creating your environment</a> -->
+                        <br/>
+                        
+                        <div class="row">
+                          <form id="menu-form-region" class="form-horizontal">
+                            <fieldset>
+                              <div class="form-group">
+                                <label for="menu-form-selec" class="control-label">On region :</label>
+                                <select class="form-control" id="menu-form-select" ng-disabled="button" ng-options="regionSetupFactory.getPossibleRegions()">
+                                </select>
+                              </div>
+                            </fieldset>
+                          </form>
+                        </div>
     </div>
   </div>
 
