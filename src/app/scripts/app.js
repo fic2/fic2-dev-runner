@@ -101,9 +101,15 @@ angular
         return $sessionStorage.regionSetup || config.default_;
       };
 
+      var setCurrentRegion = function(region) {
+        $sessionStorage.regionSetup = region;
+        console.log('setCurrentRegion: ' + region);
+      };
+
       return {
         getCurrentRegion: getCurrentRegion,
-        getPossibleRegions: getPossibleRegions
+        getPossibleRegions: getPossibleRegions,
+        setCurrentRegion: setCurrentRegion
       };
     }
   )

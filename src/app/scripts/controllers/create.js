@@ -348,7 +348,29 @@ angular.module('srcApp')
 	              }
 	            );
 	        };
-	        return retries(sub, 3);
+	  return retries(sub, 3)
+            .then(null, function(cause) {
+              $scope.failure = 'The network api is unreachable or the external network "' + APP_CONFIG['external-network-id'] + '" is missing.';
+              return $q.reject(cause);
+            });
+        };
+
+        var getAndIgnoreImageDetails = function() {
+          var imageId = APP_CONFIG.coreos.imageId;
+          var sub = function() {
+            return os.getImageDetails(imageId);
+          };
+
+          return retriesWithDelay(sub, 4, 750)
+	    .then(null, function(cause) {
+	      if (typeof cause === 'object' &&
+                  'message' in cause && cause.message === '404 Error') {
+	        $scope.failure = 'The custom panamax image "' + APP_CONFIG.coreos.imageId + '" is missing.';
+	      } else {
+                $scope.failure = 'Problems with the image api';
+              }
+	      return $q.reject(cause);
+	    }); // 404 not found
         };
 
         var tryToAssociateIp = function() {
@@ -584,17 +606,7 @@ angular.module('srcApp')
                 .then(wrap('Checking Nova quotas', checkNovaQuotas))
                 .then(wrap('Checking Neutron quotas', checkNeutronQuotas))
 	        .then(wrap('Verifying the external network existence', getAndSaveExternalNetwork))
-	        .then(function(){
-		        return APP_CONFIG.coreos.imageId;})
-	        .then(wrap('Checking the image existence', os.getImageDetails))
-	        .catch(
-	          function(cause) {
-	            if (typeof cause === 'object' && 'message' in cause && cause.message === '404 Error') {
-	              $scope.failure = 'The custom panamax image "' + APP_CONFIG.coreos.imageId + '" is missing.';
-	            }
-	            return $q.reject(cause);
-	          }
-	        )// 404 not found
+                .then(wrap('Checking the image existence', getAndIgnoreImageDetails))
             //.then(wrap('Creating the public network', getOrCreatePublicNetwork))
 	          //.then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
 	          //.then(wrap('Creating the router', getOrCreateRouter))
