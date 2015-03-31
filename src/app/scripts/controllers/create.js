@@ -602,42 +602,42 @@ angular.module('srcApp')
 
         $scope.steps = [];
         ((wrap('Loading tenant information', start))(oauth_creds.access_token))
-	        .then(wrap('Authenticating with Keystone', os.authenticateWithKeystone))
-	        .then(function(accessData){
-		        $scope.tenantData = accessData.access.token.tenant; return null;})
-                .then(wrap('Checking Nova quotas', checkNovaQuotas))
-                .then(wrap('Checking Neutron quotas', checkNeutronQuotas))
-	        .then(wrap('Verifying the external network existence', getAndSaveExternalNetwork))
-                .then(wrap('Checking the image existence', getAndIgnoreImageDetails))
-            //.then(wrap('Creating the public network', getOrCreatePublicNetwork))
-	          //.then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
-	          //.then(wrap('Creating the router', getOrCreateRouter))
-	          //.then(wrap('Attach router to subnet', bindRouterToSubnet))
-	          .then(wrap('Fetching the network', getSharedPublicNetwork))
-	        .then(wrap('Creating the security group', getOrCreateSecurityGroup))
-	        .then(wrap('Adding the security group\'s rules', addingSecurityGroupRules))
-	      // .then(wrap('Creating the server', bootServer))
-	        .then(wrap('Creating the server', getOrBootServer))
-	        .then(wrap('Finding or allocating a floating ip', getOrAllocateFloatingIp))
-	        .then(wrap('Associating the floating ip to the newly created instance', tryToAssociateIp))
-	        .then(wrap('Waiting for Panamax', waitForPanamax))
-	        .then(wrap('Injecting the SE repository', injectTemplatesRepo))
-                .then(wrap('Waiting for the Panamax UI', waitForPanamaxUi))
-	        //.then(wrap('Fetching the Panamax templates', fetchPmxTemplates))
-	        //.then(wrap('Starting the SE\'s template', launchTemplate))
-	        .then(
-	          function() {
-	            //debugger; // jshint ignore: line
-		    $scope.success_target_url = 'http://' + $scope.floatingIp.ip + ':3000';
-	            $scope.success = 'Panamax should be up & accessible (' + $scope.success_target_url + ')';
-	            angular.element('#success-dialog_button').trigger('click');
-	          })
-	        .catch(
-	          function(cause){
-	            $scope.cause = cause;
-	            angular.element('#failure-dialog_button').trigger('click');
-	            console.error(cause);
-	          });
+	  .then(wrap('Authenticating with Keystone', os.authenticateWithKeystone))
+	  .then(function(accessData){
+	    $scope.tenantData = accessData.access.token.tenant; return null;})
+          .then(wrap('Checking Nova quotas', checkNovaQuotas))
+          .then(wrap('Checking Neutron quotas', checkNeutronQuotas))
+	  .then(wrap('Verifying the external network existence', getAndSaveExternalNetwork))
+          .then(wrap('Checking the image existence', getAndIgnoreImageDetails))
+        //.then(wrap('Creating the public network', getOrCreatePublicNetwork))
+	//.then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
+	//.then(wrap('Creating the router', getOrCreateRouter))
+	//.then(wrap('Attach router to subnet', bindRouterToSubnet))
+	  .then(wrap('Fetching the network', getSharedPublicNetwork))
+	  .then(wrap('Creating the security group', getOrCreateSecurityGroup))
+	  .then(wrap('Adding the security group\'s rules', addingSecurityGroupRules))
+	// .then(wrap('Creating the server', bootServer))
+	  .then(wrap('Creating the server', getOrBootServer))
+	  .then(wrap('Finding or allocating a floating ip', getOrAllocateFloatingIp))
+	  .then(wrap('Associating the floating ip to the newly created instance', tryToAssociateIp))
+	  .then(wrap('Waiting for Panamax', waitForPanamax))
+	  .then(wrap('Injecting the SE repository', injectTemplatesRepo))
+          .then(wrap('Waiting for the Panamax UI', waitForPanamaxUi))
+	//.then(wrap('Fetching the Panamax templates', fetchPmxTemplates))
+	//.then(wrap('Starting the SE\'s template', launchTemplate))
+	  .then(
+	    function() {
+	      //debugger; // jshint ignore: line
+	      $scope.success_target_url = 'http://' + $scope.floatingIp.ip + ':3000';
+	      $scope.success = 'Panamax should be up & accessible (' + $scope.success_target_url + ')';
+	      angular.element('#success-dialog_button').trigger('click');
+	    })
+	  .catch(
+	    function(cause){
+	      $scope.cause = cause;
+	      angular.element('#failure-dialog_button').trigger('click');
+	      console.error(cause);
+	    });
 
       };
 
