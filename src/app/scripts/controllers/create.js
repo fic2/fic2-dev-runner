@@ -25,6 +25,8 @@ angular.module('srcApp')
 
       var create = function () {
         console.debug('Start create');
+        var currentRegionName = regionSetupFactory.getCurrentRegion();
+        var currentRegionConfig = APP_CONFIG.regions[currentRegionName];
 
 
         var wrap = function(text, wrapped_promise){
@@ -115,7 +117,7 @@ angular.module('srcApp')
 	          .catch(
 	            function(){
 	              console.warn('Router was not found, creating a new one');
-	              return os.createRouter(name, APP_CONFIG['external-network-id'], $scope.tenantData.id)
+	              return os.createRouter(name, currentRegionConfig['external-network-id'], $scope.tenantData.id)
 		              .then(function(data){ $scope.routerData = data.router; return null;})
 		              .catch(
 		                function(cause){
@@ -291,7 +293,7 @@ angular.module('srcApp')
 	            .catch(function(){ $scope.failure='A problem occured when reaching the floating ip\'s endpoint; perhaps the pool is misconfigured.'; });
 	        };
 	        var allocateFloatingIps = function(){
-	          return os.allocateFloatingIp(APP_CONFIG['external-network-id'])
+	          return os.allocateFloatingIp(currentRegionConfig['external-network-id'])
 	            .then(
 	              function(floatingIpData){
 		              $scope.floatingIp = floatingIpData.floating_ip;
@@ -341,7 +343,7 @@ angular.module('srcApp')
 
         var getAndSaveExternalNetwork = function() {
 	        var sub = function() {
-	          return os.getNetworkDetail(APP_CONFIG['external-network-id'])
+	          return os.getNetworkDetail(currentRegionConfig['external-network-id'])
 	            .then(
 	              function(externalNetworkData) {
 		              $scope.externalNetworkData = externalNetworkData;
@@ -350,7 +352,7 @@ angular.module('srcApp')
 	        };
 	  return retries(sub, 3)
             .then(null, function(cause) {
-              $scope.failure = 'The network api is unreachable or the external network "' + APP_CONFIG['external-network-id'] + '" is missing.';
+              $scope.failure = 'The network api is unreachable or the external network "' + currentRegionConfig['external-network-id'] + '" is missing.';
               return $q.reject(cause);
             });
         };
@@ -416,7 +418,7 @@ angular.module('srcApp')
 
 
         var getSharedPublicNetwork = function() {
-	        var targetId = APP_CONFIG['shared-network-id'];
+	        var targetId = currentRegionConfig['shared-network-id'];
 	        return os.getNetworkDetail(targetId)
 	          .then(
 	            function(networkData) {
