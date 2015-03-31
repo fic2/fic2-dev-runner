@@ -87,7 +87,7 @@ angular
     function($sessionStorage) {
       var config = {
         default_: 'Lannion',
-        regions: ['Lannion', 'Spain2', 'Berlin']
+        regions: ['Lannion', 'Spain2', 'Berlin', 'Trento', 'Waterford']
       };
 
       var getPossibleRegions = function() {

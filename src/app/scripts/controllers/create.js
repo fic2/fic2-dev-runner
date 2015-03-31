@@ -27,6 +27,7 @@ angular.module('srcApp')
         console.debug('Start create');
         var currentRegionName = regionSetupFactory.getCurrentRegion();
         var currentRegionConfig = APP_CONFIG.regions[currentRegionName];
+        var computeNoMoreIpRegex = new RegExp('No more floating ips in pool ' + currentRegionConfig['external-network-id'] + '[.]');
 
 
         var wrap = function(text, wrapped_promise){
@@ -122,7 +123,13 @@ angular.module('srcApp')
 		              .catch(
 		                function(cause){
 		                  if ('message' in cause && cause.message === '409 Error'){
-		                    $scope.failure = 'You exceeded the limit of Floating IPs on the public network. You need at least 1 available floating ip.';
+                                    //No more IP addresses available on network c02a7883-ff90-4e3d-9f10-fdf2d2c0025e.
+                                    var expected = 'No more IP addresses available on network ' + currentRegionConfig['external-network-id'] + '[.]';
+                                    if (new RegExp(expected).test(cause.body)) {
+                                      $scope.failure = 'The "' + currentRegionName + '" region has no more free ip in its poll. Contact the corresponding administrator or change region.';
+                                    } else {
+		                      $scope.failure = 'You exceeded the limit of Floating IPs on the public network. You need at least 2 available floating ips.';
+                                    }
 		                    //angular.element('#failure-dialog_button').trigger('click');
 		                  }
 		                  return $q.reject(cause);
@@ -283,62 +290,65 @@ angular.module('srcApp')
 
         
         var getOrAllocateFloatingIp = function(){
-	        var max = 3;
-	        var getFloatingIps = function(){
-	          return os.getFloatingIps()
-	            .then(
-	              function(floatingIpsData) {
-		              return floatingIpsData.floating_ips;
-	              })
-	            .catch(function(){ $scope.failure='A problem occured when reaching the floating ip\'s endpoint; perhaps the pool is misconfigured.'; });
-	        };
-	        var allocateFloatingIps = function(){
-	          return os.allocateFloatingIp(currentRegionConfig['external-network-id'])
-	            .then(
-	              function(floatingIpData){
-		              $scope.floatingIp = floatingIpData.floating_ip;
-		              return $scope.floatingIp; // .instance_id .pool: "ext-net"
-	              })
-	            .catch(
-	              function(cause) {
-		              if ('message' in cause && cause.message === '500 Error') {
-		                $scope.failure = 'Impossibility to find or create a free floating ip: your quota must be full.';
-		              }
-		              return $q.reject(cause);
-	              }
-	            );
-	        };
-	        return retries(getFloatingIps, max)
-	          .catch(
-	            function(cause) {
-	              $scope.failure = 'Unable to reach the floating ip endpoint';
-	              return $q.reject(cause);
+	  var max = 3;
+	  var getFloatingIps = function(){
+	    return os.getFloatingIps()
+	      .then(
+	        function(floatingIpsData) {
+		  return floatingIpsData.floating_ips;
+	        });
+	  };
+	  var allocateFloatingIps = function(){
+	    return os.allocateFloatingIp(currentRegionConfig['external-network-id']);
+	  };
+	  return retriesWithDelay(getFloatingIps, max, 750)
+	    .then(null, function(cause) {
+	      $scope.failure = 'A problem occured when reaching the floating ip\'s endpoint; perhaps the pool is misconfigured.';
+	      //return $q.reject(cause);
+              throw cause;
+	    })
+	    .then(
+	      function(floatingIps) {
+	        var index = null;
+	        for (index = 0; index < floatingIps.length; index++){
+		  var current = floatingIps[index];
+		  if (current.pool === $scope.externalNetworkData.name &&
+		      current.instance_id === $scope.serverData.id) {
+		    $scope.floatingIp = current;
+		    return current;
+		  }
+	        }
+	        for (index = 0; index < floatingIps.length; index++){
+		  var current = floatingIps[index];
+		  if (current.pool === $scope.externalNetworkData.name && !current.instance_id) {
+		    $scope.floatingIp = current;
+		    return current;
+		  }
+	        }
+	        return $q.reject('Not found');
+	      })
+	    .catch(
+	      function(cause) {
+	        return retries(allocateFloatingIps, max)
+	          .then(
+	            function(floatingIpData){
+		      $scope.floatingIp = floatingIpData.floating_ip;
+		      return $scope.floatingIp; // .instance_id .pool: "ext-net"
 	            })
-	            .then(
-	              function(floatingIps) {
-	                var index = null;
-	                for (index = 0; index < floatingIps.length; index++){
-		                var current = floatingIps[index];
-		                if (current.pool === $scope.externalNetworkData.name &&
-		                    current.instance_id === $scope.serverData.id) {
-		                  $scope.floatingIp = current;
-		                  return current;
-		                }
-	                }
-	                for (index = 0; index < floatingIps.length; index++){
-		                var current = floatingIps[index];
-		                if (current.pool === $scope.externalNetworkData.name && !current.instance_id) {
-		                  $scope.floatingIp = current;
-		                  return current;
-		                }
-	                }
-	                return $q.reject('Not found');
-	              })
 	          .catch(
 	            function(cause) {
-	              return retries(allocateFloatingIps, max);
+		      if ('message' in cause && cause.message === '500 Error') {
+		        $scope.failure = 'Impossibility to find or create a free floating ip: your quota must be full.';
+		      } else if ('body' in cause && computeNoMoreIpRegex.test(cause.body)) {
+                        $scope.failure = 'The "' + currentRegionName + '" region has no more free ip to spare. Contact the corresponding adminstrator or change region.';
+                      } else {
+                        $scope.failure = 'Unexpected error while allocation a floating ip.';
+                      }
+		      return $q.reject(cause);
 	            }
 	          );
+	      }
+	    );
         };
 
         var getAndSaveExternalNetwork = function() {
@@ -601,20 +611,25 @@ angular.module('srcApp')
         };
 
         $scope.steps = [];
-        ((wrap('Loading tenant information', start))(oauth_creds.access_token))
+        var phases = ((wrap('Loading tenant information', start))(oauth_creds.access_token))
 	  .then(wrap('Authenticating with Keystone', os.authenticateWithKeystone))
 	  .then(function(accessData){
 	    $scope.tenantData = accessData.access.token.tenant; return null;})
           .then(wrap('Checking Nova quotas', checkNovaQuotas))
           .then(wrap('Checking Neutron quotas', checkNeutronQuotas))
 	  .then(wrap('Verifying the external network existence', getAndSaveExternalNetwork))
-          .then(wrap('Checking the image existence', getAndIgnoreImageDetails))
-        //.then(wrap('Creating the public network', getOrCreatePublicNetwork))
-	//.then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
-	//.then(wrap('Creating the router', getOrCreateRouter))
-	//.then(wrap('Attach router to subnet', bindRouterToSubnet))
-	  .then(wrap('Fetching the network', getSharedPublicNetwork))
-	  .then(wrap('Creating the security group', getOrCreateSecurityGroup))
+          .then(wrap('Checking the image existence', getAndIgnoreImageDetails));
+
+        if ('shared-network-id' in currentRegionConfig) {
+          phases = phases.then(wrap('Fetching the network', getSharedPublicNetwork));
+        } else {
+          phases = phases.then(wrap('Creating the public network', getOrCreatePublicNetwork))
+	    .then(wrap('Creating the public subnetwork', getOrCreatePublicSubNetwork))
+	    .then(wrap('Creating the router', getOrCreateRouter))
+	    .then(wrap('Attach router to subnet', bindRouterToSubnet))
+        }
+
+        phases.then(wrap('Creating the security group', getOrCreateSecurityGroup))
 	  .then(wrap('Adding the security group\'s rules', addingSecurityGroupRules))
 	// .then(wrap('Creating the server', bootServer))
 	  .then(wrap('Creating the server', getOrBootServer))

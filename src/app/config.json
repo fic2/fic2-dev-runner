@@ -19,6 +19,18 @@
     },
     "Berlin": {
       "external-network-id": "c02a7883-ff90-4e3d-9f10-fdf2d2c0025e"
+    },
+    "Spain2": {
+      "shared-network-id": "473dacd2-42a6-4c1c-93e8-1b29f098846e",
+      "external-network-id": "51563cad-83a8-46fc-be47-9e9f3cea9ee8"
+    },
+    "Trento": {
+      "shared-network-id": "62e31eb7-fc6f-486b-8955-5caaa82b372b",
+      "external-network-id": "f0213462-9d16-4129-8091-bbea4e0a99a2"
+    },
+    "Waterford": {
+      "shared-network-id": "5d336512-acfd-4b22-9dae-e31d17a99b31",
+      "external-network-id": "932080d8-ec7e-4ed1-930a-a85f5571c6a1"
     }
   },
 
