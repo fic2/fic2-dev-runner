@@ -18,7 +18,8 @@ module.exports = function (grunt) {
   // Configurable paths for the application
   var appConfig = {
     app: require('./bower.json').appPath || 'app',
-    dist: 'dist'
+    dist: 'dist',
+    pkg: grunt.file.readJSON('package.json')
   };
 
   // Define the configuration for all the tasks
@@ -390,6 +391,19 @@ module.exports = function (grunt) {
         configFile: 'test/karma.conf.js',
         singleRun: true
       }
+    },
+
+    compress: {
+      dist: {
+        options: {
+          archive: 'releases/fic2lab-runner_<%= yeoman.pkg.version %>.tgz',
+          mode: 'tgz',
+          level: 9
+        },
+        cwd: './',
+        src: ['<%= yeoman.dist %>/**/*'],
+        dest: ''
+      }
     }
   });
 
@@ -431,12 +445,13 @@ module.exports = function (grunt) {
     'concat',
     'ngAnnotate',
     'copy:dist',
-    'cdnify',
+    // 'cdnify',
     'cssmin',
     'uglify',
     'filerev',
     'usemin',
-    'htmlmin'
+    'htmlmin',
+    'compress:dist'
   ]);
 
   grunt.registerTask('default', [
