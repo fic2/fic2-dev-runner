@@ -1,0 +1,11 @@
+FROM nginx
+
+RUN apt-get -y update \
+    && apt-get -y install ca-certificates
+
+ADD src/dist /usr/share/nginx/html
+
+ADD prod/nginx /etc/nginx
+
+EXPOSE 80 443
+
