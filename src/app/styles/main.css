@@ -27,3 +27,8 @@ body {
   width: auto;
   display: inline-block;
 }
+
+.cause {
+  font-family: Consolas, Lucida Console, monospace;
+  font-size: 9pt;
+}

@@ -44,38 +44,7 @@
     </div>
   </div>
 
-  <button id="failure-dialog_button" class="btn btn-primary hide" data-toggle="modal" data-target="#failure-dialog" data-backdrop="static" data-keyboard="false">See failure</button>
-  <div id="failure-dialog" class="modal fade" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title text-danger">Failure</h4>
-        </div>
-        <div class="modal-body">
-          <div ng-failure></div>
-        </div>
-        <div class="modal-footer">
-          <a href="/" class="btn btn-primary" ng-click="close_modal()">Go back to the main index</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <button id="success-dialog_button" class="btn btn-primary hide" data-toggle="modal" data-target="#success-dialog" data-backdrop="static" data-keyboard="false">See success</button>
-  <div id="success-dialog" class="modal fade" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title text-success">Success</h4>
-        </div>
-        <div class="modal-body">
-          <div ng-success></div>
-        </div>
-        <div class="modal-footer">
-          <a href="/" class="btn btn-xs btn-primary" ng-click="close_modal()">Go back to the main index</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
+
+<modal-runner success="{{success}}" success-Target-Url="{{success_target_url}}"
+              cause="{{cause}}" failure="{{failure}}"></modal-runner>
