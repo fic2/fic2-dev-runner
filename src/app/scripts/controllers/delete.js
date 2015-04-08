@@ -163,7 +163,7 @@ angular.module('srcApp')
                   var iptoBeRemove = [];
 	          for (index = 0; index < floatingIps.length; index++){
 		    var current = floatingIps[index];
-                    if (!current.instance_id || current.instance_id ===  $scope.serverData.id) {
+                    if (!current.instance_id || ($scope.serverData && $scope.serverData.id && current.instance_id ===  $scope.serverData.id)) {
                       iptoBeRemove.push(current);
                     }
 	          }
