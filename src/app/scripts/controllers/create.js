@@ -338,9 +338,10 @@ angular.module('srcApp')
 	          .catch(
 	            function(cause) {
 		      if ('message' in cause && cause.message === '500 Error') {
-		        $scope.failure = 'Impossibility to find or create a free floating ip: your quota must be full.';
+                        $scope.failure = 'Even though you got enough quota, there is an impossibility to find or create a free floating ip.';
+                        cause = [cause, $scope.quotas, $scope.neutronQuotas];
 		      } else if ('body' in cause && computeNoMoreIpRegex.test(cause.body)) {
-                        $scope.failure = 'The "' + currentRegionName + '" region has no more free ip to spare. Contact the corresponding adminstrator or change region.';
+                        $scope.failure = 'Even though you got enough quota, the "' + currentRegionName + '" region has no more free ip to spare. Contact the corresponding adminstrator or change region.';
                       } else {
                         $scope.failure = 'Unexpected error while allocation a floating ip.';
                       }
