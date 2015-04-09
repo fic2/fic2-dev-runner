@@ -1,0 +1,14 @@
+<div class="row">
+  <form class="form-horizontal">
+    <fieldset>
+      <div class="form-group">
+        <label for="menu-form-selec" class="control-label">On region : </label>
+        <select class="form-control" id="menu-form-select" ng-disabled="disabledOn"
+                ng-model="selection" ng-init="selection=regionSetupFactory.getCurrentRegion()"
+                ng-click="regionSetupFactory.setCurrentRegion(selection)"
+                ng-options="item for item in regionSetupFactory.getPossibleRegions()">
+        </select>
+      </div>
+    </fieldset>
+  </form>
+</div>

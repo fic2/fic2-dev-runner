@@ -19,21 +19,9 @@
 
 			<!-- <a href="#" class="btn btn-success"><i class="mdi-av-play-circle-fill .icons-material"></i> Start creating your environment</a> -->
                         <br/>
-                        
-                        <div class="row">
-                          <form id="menu-form-region" class="form-horizontal">
-                            <fieldset>
-                              <div class="form-group">
-                                <label for="menu-form-selec" class="control-label">On region :</label>
-                                <select class="form-control" id="menu-form-select" ng-disabled="button"
-                                        ng-model="selection" ng-init="selection=regionSetupFactory.getCurrentRegion()"
-                                        ng-click="regionSetupFactory.setCurrentRegion(selection)"
-                                        ng-options="item for item in regionSetupFactory.getPossibleRegions()">
-                                </select>
-                              </div>
-                            </fieldset>
-                          </form>
-                        </div>
+
+                        <region-form-selection disabled-on="button"/>
+
     </div>
   </div>
 
