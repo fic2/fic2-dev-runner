@@ -196,6 +196,41 @@ angular.module('srcApp')
             );
         };
 
+        var tryToRemoveRouter = function() {
+          var name = os.createName('router');
+
+          var getRouter = function() {
+            return retriesWithDelay(os.getRoutersList, 3, 750)
+              .then(null, function(cause) {
+                $scope.failure = 'Unable to retrieve the routers list.';
+                return $q.reject(cause);
+              });
+          };
+
+          var removeRouter = function(routerData) {
+            return os.deleteRouter(routerData.id)
+              .then(null, function(cause) {
+                $scope.failure = 'Unable to remove the router ' + routerData.id;
+                return $q.reject(cause);
+              });
+          };
+
+          var fetchAndRemoveRouter = function() {
+            return getRouter()
+              .then(function(data){return data.routers;})
+              .then(function(routers) {
+                return $q.when(routers)
+                  .then(os.getByNameFactory(name))
+                  .then(removeRouter, function(cause) {
+                    console.log('The router was not found, there is no need for deletion');
+                    return null;
+                  });
+              });
+          };
+
+          return retriesWithDelay(fetchAndRemoveRouter, 3, 750);
+        };
+
         $scope.steps = [];
         ((wrap('Loading tenant information', start))(oauth_creds.access_token))
           .then(wrap('Authenticating with Keystone', os.authenticateWithKeystone))
@@ -204,6 +239,7 @@ angular.module('srcApp')
           .then(wrap('Removing the generated instance', removeInstance))
           .then(wrap('Removing unused floating ips', removeFloatinIps))
           .then(wrap('Removing the generated security group', removeSecurityGroup))
+          .then(wrap('Removing the router', tryToRemoveRouter))
           .then(
             function() {
               //debugger; // jshint ignore: line

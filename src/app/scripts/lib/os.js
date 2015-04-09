@@ -331,6 +331,12 @@ angular.module('srcApp')
 	return deferred.promise;
       };
 
+      var deleteRouter = function(routerId) {
+	var deferred = $q.defer();
+	JSTACK.Neutron.deleterouter(routerId, deferred.resolve, deferred.reject, getRegion());
+	return deferred.promise;
+      };
+
 
       return {
 	createName: createName,
@@ -361,7 +367,8 @@ angular.module('srcApp')
 	deleteServer: deleteServer,
         releaseFloatingIp: releaseFloatingIp,
         deleteSecurityGroup: deleteSecurityGroup,
-        getQuotaDetail: getQuotaDetail
+        getQuotaDetail: getQuotaDetail,
+        deleteRouter: deleteRouter
       };
     }
   );
