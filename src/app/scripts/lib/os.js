@@ -337,6 +337,12 @@ angular.module('srcApp')
 	return deferred.promise;
       };
 
+      var deleteSubNetwork = function(subNetworkId) {
+	var deferred = $q.defer();
+	JSTACK.Neutron.deletesubnet(subNetworkId, deferred.resolve, deferred.reject, getRegion());
+	return deferred.promise;
+      };
+
 
       return {
 	createName: createName,
@@ -368,7 +374,8 @@ angular.module('srcApp')
         releaseFloatingIp: releaseFloatingIp,
         deleteSecurityGroup: deleteSecurityGroup,
         getQuotaDetail: getQuotaDetail,
-        deleteRouter: deleteRouter
+        deleteRouter: deleteRouter,
+        deleteSubNetwork: deleteSubNetwork
       };
     }
   );

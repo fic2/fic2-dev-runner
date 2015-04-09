@@ -115,7 +115,7 @@ angular.module('srcApp')
           var name = $scope.instance_name;
 
           var stillThere = function(instanceData) {
-            $scope.failure = 'The instance ' + name + ' (id: ' + instanceData.id + ') was scheduled for removal, but after several tries';
+            $scope.failure = 'The instance ' + name + ' (id: ' + instanceData.id + ') was scheduled for removal, but is always present after a timeout';
             return $q.reject(instanceData);
           };
 
@@ -259,6 +259,41 @@ angular.module('srcApp')
           return retriesWithDelay(fetchAndRemoveRouter, 3, 750);
         };
 
+        var tryToRemoveSubNetwork = function() {
+          var name = os.createName('private_sub_network');
+
+          var getSubNetwork = function() {
+            return retriesWithDelay(os.getSubNetworksList, 3, 750)
+              .then(null, function(cause) {
+                $scope.failure = 'Unable to retrieve the subnetworks list.';
+                return $q.reject(cause);
+              });
+          };
+
+          var removeSubNetwork = function(subNetworkData) {
+            return os.deleteSubNetwork(subNetworkData.id)
+              .then(null, function(cause) {
+                $scope.failure = 'Unable to remove the subnetwork ' + subNetworkData.id;
+                return $q.reject(cause);
+              });
+          };
+
+          var fetchAndRemoveSubNetwork = function() {
+            return getSubNetwork()
+              .then(function(data){return data.subnets;})
+              .then(function(subnets) {
+                return $q.when(subnets)
+                  .then(os.getByNameFactory(name))
+                  .then(removeSubNetwork, function(cause) {
+                    console.log('The subnetwork was not found, there is no need for deletion');
+                    return null;
+                  });
+              });
+          };
+
+          return retriesWithDelay(fetchAndRemoveSubNetwork, 3, 750);
+        };
+
         $scope.steps = [];
         ((wrap('Loading tenant information', start))(oauth_creds.access_token))
           .then(wrap('Authenticating with Keystone', os.authenticateWithKeystone))
@@ -269,6 +304,7 @@ angular.module('srcApp')
           .then(wrap('Removing unused floating ips', removeFloatinIps))
           .then(wrap('Removing the generated security group', removeSecurityGroup))
           .then(wrap('Removing the router', tryToRemoveRouter))
+          .then(wrap('Removing the subnetwork', tryToRemoveSubNetwork))
           .then(
             function() {
               //debugger; // jshint ignore: line
