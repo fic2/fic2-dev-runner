@@ -111,6 +111,34 @@ angular.module('srcApp')
             );
         };
 
+        var waitForInstanceRemoval = function() {
+          var name = $scope.instance_name;
+
+          var stillThere = function(instanceData) {
+            $scope.failure = 'The instance ' + name + ' (id: ' + instanceData.id + ') was scheduled for removal, but after several tries';
+            return $q.reject(instanceData);
+          };
+
+          var get = function() {
+	    return retriesWithDelay(os.fetchNovaServers, 3, 500)
+              .then(null, function(cause) {
+                $scope.failure = 'Uneable to fetch the list of server, aborting deletion';
+                return $q.reject(cause);
+              })
+	      .then(function(data){return data.servers;})
+              .then(function(servers) {
+                return $q.when(servers)
+	          .then(os.getByNameFactory(name))
+                  .then(stillThere, function(cause) {
+                    console.log('The instance ' + name + ' was not found, which means it was removed');
+                    return null;
+                  });
+              });
+	  };
+
+          return retriesWithDelay(get, 40, 750);
+        };
+
 
         var removeSecurityGroup = function() {
           var name = os.createName('sec_group');
@@ -237,6 +265,7 @@ angular.module('srcApp')
           .then(function(accessData){
             $scope.tenantData = accessData.access.token.tenant; return null;})
           .then(wrap('Removing the generated instance', removeInstance))
+          .then(wrap('Waiting for instance removal', waitForInstanceRemoval))
           .then(wrap('Removing unused floating ips', removeFloatinIps))
           .then(wrap('Removing the generated security group', removeSecurityGroup))
           .then(wrap('Removing the router', tryToRemoveRouter))
