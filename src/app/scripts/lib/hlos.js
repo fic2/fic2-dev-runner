@@ -71,7 +71,13 @@ angular.module('srcApp')
       return {
         removeNetwork: removeResourceIfItExistsBuilder(
           os.getNetworksList, function(data){return data;},
-          os.getByNameFactory, os.deleteNetwork)
+          os.getByNameFactory, os.deleteNetwork),
+        removeSubNetwork: removeResourceIfItExistsBuilder(
+          os.getSubNetworksList, function(data){return data.subnets;},
+          os.getByNameFactory, os.deleteSubNetwork),
+        removeRouter: removeResourceIfItExistsBuilder(
+          os.getRoutersList, function(data){return data.routers;},
+          os.getByNameFactory, os.deleteRouter)
       };
 
     }]

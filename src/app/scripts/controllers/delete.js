@@ -226,72 +226,12 @@ angular.module('srcApp')
 
         var tryToRemoveRouter = function() {
           var name = os.createName('router');
-
-          var getRouter = function() {
-            return retriesWithDelay(os.getRoutersList, 3, 750)
-              .then(null, function(cause) {
-                $scope.failure = 'Unable to retrieve the routers list.';
-                return $q.reject(cause);
-              });
-          };
-
-          var removeRouter = function(routerData) {
-            return os.deleteRouter(routerData.id)
-              .then(null, function(cause) {
-                $scope.failure = 'Unable to remove the router ' + routerData.id;
-                return $q.reject(cause);
-              });
-          };
-
-          var fetchAndRemoveRouter = function() {
-            return getRouter()
-              .then(function(data){return data.routers;})
-              .then(function(routers) {
-                return $q.when(routers)
-                  .then(os.getByNameFactory(name))
-                  .then(removeRouter, function(cause) {
-                    console.log('The router was not found, there is no need for deletion');
-                    return null;
-                  });
-              });
-          };
-
-          return retriesWithDelay(fetchAndRemoveRouter, 3, 750);
+          return hlos.removeRouter(name);
         };
 
         var tryToRemoveSubNetwork = function() {
           var name = os.createName('private_sub_network');
-
-          var getSubNetwork = function() {
-            return retriesWithDelay(os.getSubNetworksList, 3, 750)
-              .then(null, function(cause) {
-                $scope.failure = 'Unable to retrieve the subnetworks list.';
-                return $q.reject(cause);
-              });
-          };
-
-          var removeSubNetwork = function(subNetworkData) {
-            return os.deleteSubNetwork(subNetworkData.id)
-              .then(null, function(cause) {
-                $scope.failure = 'Unable to remove the subnetwork ' + subNetworkData.id;
-                return $q.reject(cause);
-              });
-          };
-
-          var fetchAndRemoveSubNetwork = function() {
-            return getSubNetwork()
-              .then(function(data){return data.subnets;})
-              .then(function(subnets) {
-                return $q.when(subnets)
-                  .then(os.getByNameFactory(name))
-                  .then(removeSubNetwork, function(cause) {
-                    console.log('The subnetwork was not found, there is no need for deletion');
-                    return null;
-                  });
-              });
-          };
-
-          return retriesWithDelay(fetchAndRemoveSubNetwork, 3, 750);
+          return hlos.removeSubNetwork(name);
         };
 
         var tryToRemoveNetwork = function() {
