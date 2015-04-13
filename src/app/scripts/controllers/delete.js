@@ -14,7 +14,7 @@
 angular.module('srcApp')
   .controller(
     'DeleteCtrl',
-    function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, SES_CONFIG, loginRequired, os) {
+    function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, SES_CONFIG, loginRequired, os, hlos) {
 
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       $scope.targetSeName = $routeParams.seKeyName;
@@ -294,6 +294,11 @@ angular.module('srcApp')
           return retriesWithDelay(fetchAndRemoveSubNetwork, 3, 750);
         };
 
+        var tryToRemoveNetwork = function() {
+          var name = os.createName('private_network');
+          return hlos.removeNetwork(name);
+        };
+
         $scope.steps = [];
         ((wrap('Loading tenant information', start))(oauth_creds.access_token))
           .then(wrap('Authenticating with Keystone', os.authenticateWithKeystone))
@@ -305,6 +310,7 @@ angular.module('srcApp')
           .then(wrap('Removing the generated security group', removeSecurityGroup))
           .then(wrap('Removing the router', tryToRemoveRouter))
           .then(wrap('Removing the subnetwork', tryToRemoveSubNetwork))
+          .then(wrap('Removing the network', tryToRemoveNetwork))
           .then(
             function() {
               //debugger; // jshint ignore: line
