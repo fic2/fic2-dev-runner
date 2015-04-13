@@ -80,7 +80,11 @@ angular.module('srcApp')
         removeRouter: removeResourceIfItExistsBuilder(
           'Neutron/Router',
           os.getRoutersList, function(data){return data.routers;},
-          os.getByNameFactory, os.deleteRouter)
+          os.getByNameFactory, os.deleteRouter),
+        removeSecurityGroup: removeSecurityGroup(
+          'Neutron/SecurityGroup',
+          os.getSecurityGroupList, function(securityGroupsData){return securityGroupsData.security_groups;},
+          os.getByNameFactory, os.deleteSecurityGroup)
       };
 
     }]

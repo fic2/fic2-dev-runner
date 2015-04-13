@@ -143,30 +143,7 @@ angular.module('srcApp')
         var removeSecurityGroup = function() {
           var name = os.createName('sec_group');
 
-          return retriesWithDelay(os.getSecurityGroupList, 3, 750)
-            .then(null, function(cause) {
-                $scope.failure = 'Unable to fetch the security groups list';
-	        return $q.reject(cause);
-            })
-            .then(function(securityGroupsData){return securityGroupsData.security_groups;})
-            .then(os.getByNameFactory(name))
-            .then(null, function(cause) {
-              return null;
-            })
-            .then(
-              function(securityGroupData) {
-                if (! securityGroupData) {
-                  return null;
-                }
-                var f = function() { return os.deleteSecurityGroup(securityGroupData.id); };
-                return retriesWithDelay(f, 3, 750)
-                  .then(null, function(cause) {
-                    $scope.failure = 'Cannot delete the security group \'' + securityGroupData.id + '\'';
-                    return $q.reject(cause);
-                  });
-              }
-            );
-
+          return hlos.removeSecurityGroup(name);
         };
 
 
