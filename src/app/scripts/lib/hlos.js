@@ -30,12 +30,12 @@ angular.module('srcApp')
 
       var normalRetries = function(p) { return retriesWithDelay(p, 3, 750); };
 
-      var removeResourceIfItExistsBuilder = function(getResources, unboxResources, findResource, deleteResource) {
+      var removeResourceIfItExistsBuilder = function(type, getResources, unboxResources, findResource, deleteResource) {
 
         var fetchResources = function() {
           return normalRetries(getResources)
             .then(null, function(cause) {
-              $scope.failure = 'Unable to retrieve the resources';
+              $scope.failure = 'Unable to retrieve the resources of type "' + type +  '", perhaps the endpoint is down';
               return $q.reject(cause);
             });
         };
@@ -43,7 +43,7 @@ angular.module('srcApp')
         var removeResource = function(resourceData) {
           return deleteResource(resourceData.id)
             .then(null, function(cause) {
-              $scope.failure = 'Unable to remove the resource ' + resourceData.id;
+              $scope.failure = 'Unable to remove the resource ' + resourceData.id + ' of type "' + type + '"';
               return $q.reject([cause, resourceData]);
             });
         };
@@ -56,7 +56,7 @@ angular.module('srcApp')
                 return $q.when(resources)
                   .then(findResource(resourceName))
                   .then(removeResource, function(cause) {
-                    console.log('The resource "' + resourceName + '" was not found, there is no need for deletion');
+                    console.log('The resource "' + resourceName + '" of type "' + type + '" was not found, there is no need for deletion');
                     return null;
                   });
               });
@@ -70,12 +70,15 @@ angular.module('srcApp')
 
       return {
         removeNetwork: removeResourceIfItExistsBuilder(
+          'Neutron/Network',
           os.getNetworksList, function(data){return data;},
           os.getByNameFactory, os.deleteNetwork),
         removeSubNetwork: removeResourceIfItExistsBuilder(
+          'Neutron/SubNetwork',
           os.getSubNetworksList, function(data){return data.subnets;},
           os.getByNameFactory, os.deleteSubNetwork),
         removeRouter: removeResourceIfItExistsBuilder(
+          'Neutron/Router',
           os.getRoutersList, function(data){return data.routers;},
           os.getByNameFactory, os.deleteRouter)
       };
