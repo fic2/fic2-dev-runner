@@ -33,21 +33,23 @@ angular.module('srcApp')
       var id = function(x) { return x; };
       var did = function(x) { debugger; return x; };
 
+      var box = function(failure, cause) { return {failure: failure, boxedCause: cause}; };
+
       var removeResourceIfItExistsBuilder = function(type, getResources, unboxResources, findResource, filterResource, deleteResource) {
 
         var fetchResources = function() {
           return normalRetries(getResources)
             .then(null, function(cause) {
-              $scope.failure = 'Unable to retrieve the resources of type "' + type +  '", perhaps the endpoint is down';
-              return $q.reject(cause);
+              var failure = 'Unable to retrieve the resources of type "' + type +  '", perhaps the endpoint is down';
+              return $q.reject(box(failure, cause));
             });
         };
 
         var removeResource = function(resourceData) {
           return deleteResource(resourceData.id)
             .then(null, function(cause) {
-              $scope.failure = 'Unable to remove the resource ' + resourceData.id + ' of type "' + type + '"';
-              return $q.reject([cause, resourceData]);
+              var failure = 'Unable to remove the resource ' + resourceData.id + ' of type "' + type + '"';
+              return $q.reject(box(failure, [cause, resourceData]));
             });
         };
 

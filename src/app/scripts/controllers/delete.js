@@ -192,6 +192,10 @@ angular.module('srcApp')
             })
           .catch(
             function(cause){
+              if ('failure' in cause && 'boxedCause' in cause) {
+                $scope.failure = cause.failure;
+                cause = cause.boxedCause;
+              }
               $scope.cause = cause;
               angular.element('#failure-dialog_button').trigger('click');
               console.error(cause);
