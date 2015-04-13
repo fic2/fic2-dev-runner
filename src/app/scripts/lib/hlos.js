@@ -30,7 +30,10 @@ angular.module('srcApp')
 
       var normalRetries = function(p) { return retriesWithDelay(p, 3, 750); };
 
-      var removeResourceIfItExistsBuilder = function(type, getResources, unboxResources, findResource, deleteResource) {
+      var id = function(x) { return x; };
+      var did = function(x) { debugger; return x; };
+
+      var removeResourceIfItExistsBuilder = function(type, getResources, unboxResources, findResource, filterResource, deleteResource) {
 
         var fetchResources = function() {
           return normalRetries(getResources)
@@ -55,8 +58,9 @@ angular.module('srcApp')
               .then(function(resources) {
                 return $q.when(resources)
                   .then(findResource(resourceName))
+                  .then(filterResource)
                   .then(removeResource, function(cause) {
-                    console.log('The resource "' + resourceName + '" of type "' + type + '" was not found, there is no need for deletion');
+                    console.log('The resource "' + resourceName + '" of type "' + type + '" was not found, there is no need for deletion; cause: ' + cause);
                     return null;
                   });
               });
@@ -68,23 +72,35 @@ angular.module('srcApp')
         };
       };
 
+      var filterComputeByStatus = function(serverData) {
+        var deleting = 'deleting';
+        if (serverData['OS-EXT-STS:task_state'] === deleting) {
+          return $q.reject('Ignoring server with the task_state ' + deleting);
+        }
+        return serverData;
+      };
+
       return {
         removeNetwork: removeResourceIfItExistsBuilder(
           'Neutron/Network',
-          os.getNetworksList, function(data){return data;},
-          os.getByNameFactory, os.deleteNetwork),
+          os.getNetworksList, id,
+          os.getByNameFactory, id, os.deleteNetwork),
         removeSubNetwork: removeResourceIfItExistsBuilder(
           'Neutron/SubNetwork',
           os.getSubNetworksList, function(data){return data.subnets;},
-          os.getByNameFactory, os.deleteSubNetwork),
+          os.getByNameFactory, id, os.deleteSubNetwork),
         removeRouter: removeResourceIfItExistsBuilder(
           'Neutron/Router',
           os.getRoutersList, function(data){return data.routers;},
-          os.getByNameFactory, os.deleteRouter),
-        removeSecurityGroup: removeSecurityGroup(
+          os.getByNameFactory, id, os.deleteRouter),
+        removeSecurityGroup: removeResourceIfItExistsBuilder(
           'Neutron/SecurityGroup',
           os.getSecurityGroupList, function(securityGroupsData){return securityGroupsData.security_groups;},
-          os.getByNameFactory, os.deleteSecurityGroup)
+          os.getByNameFactory, id, os.deleteSecurityGroup),
+        removeCompute: removeResourceIfItExistsBuilder(
+          'Nova/Compute',
+          os.fetchNovaServers, function(data){return data.servers;},
+          os.getByNameFactory, filterComputeByStatus, os.deleteServer)
       };
 
     }]
