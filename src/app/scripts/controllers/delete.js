@@ -64,51 +64,7 @@ angular.module('srcApp')
         var removeInstance = function() {
           $scope.serverData = null;
           var name = $scope.instance_name;
-          var get = function() {
-	    return os.fetchNovaServers()
-	      .then(function(data){return data.servers;})
-	      .then(os.getByNameFactory(name))
-              .catch(
-                function(cause) {
-                  if (cause === 'Not found') {
-                    return null;
-                  }
-                  return $q.reject(cause);
-                }
-              )
-	      .then(
-	        function(serverData) {
-		  //debugger; // jshint ignore: line
-		  console.info('Server found: ' + JSON.stringify(serverData));
-		  $scope.serverData = serverData;
-		  return null;
-	        }
-	      );
-	  };
-
-          var del = function() {
-            return os.deleteServer($scope.serverData.id);
-          }
-
-          return retriesWithDelay(get, 3, 750)
-            .catch(
-              function(cause) {
-                $scope.failure = 'Unable to fetch the list of instances';
-	        return $q.reject(cause);
-              })
-            .then(
-              function() {
-                if ($scope.serverData) {
-                  return retriesWithDelay(del, 3, 750);
-                }
-              }
-            )
-            .catch(
-              function(cause) {
-                $scope.failure = 'Cannot delete instance with id \'' + $scope.serverData.id + '\'';
-	        return $q.reject(cause);
-              }
-            );
+          return hlos.removeCompute(name);
         };
 
         var waitForInstanceRemoval = function() {
