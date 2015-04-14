@@ -574,22 +574,25 @@ angular.module('srcApp')
 
 
         var checkNeutronQuotas = function() {
+          var limit = 1;
           var sub = function() {
             return os.getQuotaDetail($scope.tenantData.id);
           };
 
           var verifyQuota = function(quota) {
-            if (quota.floatingip && quota.floatingip >= 1) {
+            if (quota.floatingip && quota.floatingip >= limit) {
               return null;
             } else {
-              $scope.failure = 'Not enough ip quota in Neutron';
+              $scope.failure = 'Your floating ip quota is insufficient. After checking with the Neutron api, your current quota limit is : ' + quota.floatingip + '. Or the runner setup requires at least ' + limit + ' floating ips. You can ask the support for a quota revision by using the following link:<br/><a href="mailto:fiware-lab-help@lists.fi-ware.org?subject=FIC2Lab%20%2D%20' + currentRegionName + '%20Node%20%2D%20Tenant%27s%20quota%20modification%20required" class="btn btn-xs btn-success">Email the support</a>' ;
+
+//Not enough ip quota in Neutron, your current limit is: ' + quota.floatingip;
               return $q.reject(JSON.stringify(quota, null, 1));
             }
           };
 
           return retriesWithDelay(sub, 3, 750)
             .then(null, function(cause) {
-              $scope.failure = 'Cannot fetch Neutron quotas';
+              $scope.failure = 'Cannot fetch Neutron quotas, perhaps the api endpoint is down';
               return $q.reject(cause);
             })
             .then(function(data) {
