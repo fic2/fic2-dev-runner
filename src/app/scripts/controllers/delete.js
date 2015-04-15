@@ -14,9 +14,8 @@
 angular.module('srcApp')
   .controller(
     'DeleteCtrl',
-    function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, SES_CONFIG, loginRequired, os, hlos) {
+    function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, loginRequired, os, hlos) {
 
-      $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       $scope.targetSeName = $routeParams.seKeyName;
       $scope.failure = 'An error occured';
       $scope.instance_name = '_dhub_generated_panamax';

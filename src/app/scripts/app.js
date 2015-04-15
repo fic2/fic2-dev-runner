@@ -11,9 +11,6 @@ deferredBootstrapper.bootstrap({
   resolve: {
     APP_CONFIG: ['$http', function ($http) {
       return $http.get('/config.json');
-    }],
-    SES_CONFIG: ['$http', function ($http) {
-      return $http.get('/ses.json');
     }]
   }
 });
