@@ -75,21 +75,21 @@ angular.module('srcApp')
           };
 
           var get = function() {
-	    return retriesWithDelay(os.fetchNovaServers, 3, 500)
+            return retriesWithDelay(os.fetchNovaServers, 3, 500)
               .then(null, function(cause) {
                 $scope.failure = 'Uneable to fetch the list of server, aborting deletion';
                 return $q.reject(cause);
               })
-	      .then(function(data){return data.servers;})
+              .then(function(data){return data.servers;})
               .then(function(servers) {
                 return $q.when(servers)
-	          .then(os.getByNameFactory(name))
+                  .then(os.getByNameFactory(name))
                   .then(stillThere, function(cause) {
                     console.log('The instance ' + name + ' was not found, which means it was removed');
                     return null;
                   });
               });
-	  };
+          };
 
           return retriesWithDelay(get, 40, 750);
         };
@@ -104,29 +104,29 @@ angular.module('srcApp')
 
         var removeFloatinIps = function() {
           var getFloatingIps = function(){
-	    return os.getFloatingIps()
-	      .then(
-	        function(floatingIpsData) {
-		  return floatingIpsData.floating_ips;
-	        });
-	  };
+            return os.getFloatingIps()
+              .then(
+                function(floatingIpsData) {
+                  return floatingIpsData.floating_ips;
+                });
+          };
 
           return retriesWithDelay(getFloatingIps, 4, 750)
-	    .catch(
-	      function(cause) {
-	        $scope.failure = 'Unable to reach the floating ip endpoint';
-	        return $q.reject(cause);
-	      })
+            .catch(
+              function(cause) {
+                $scope.failure = 'Unable to reach the floating ip endpoint';
+                return $q.reject(cause);
+              })
               .then(
                 function(floatingIps) {
-	          var index = null;
+                  var index = null;
                   var iptoBeRemove = [];
-	          for (index = 0; index < floatingIps.length; index++){
-		    var current = floatingIps[index];
+                  for (index = 0; index < floatingIps.length; index++){
+                    var current = floatingIps[index];
                     if (!current.instance_id || ($scope.serverData && $scope.serverData.id && current.instance_id ===  $scope.serverData.id)) {
                       iptoBeRemove.push(current);
                     }
-	          }
+                  }
                   var promises = iptoBeRemove.map(
                     function(floatingIp) {
                       return os.releaseFloatingIp(floatingIp.id)
