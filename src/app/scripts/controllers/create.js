@@ -192,10 +192,15 @@ angular.module('srcApp')
 	            return os.createSecurityGroupRule('TCP', portFrom, portTo, '0.0.0.0/0', groupId)
 	              .catch(
 		              function(cause){
-		                if ('message' in cause && cause.message === '404 Error') {
-		                  console.info('Rules ' + portFrom + ':' + portTo + ' already exists');
-		                  return cause;
-		                }
+                                if ('message' in cause) {
+                                  if (cause.message === '404 Error') {
+                                    console.info('Rules ' + portFrom + ':' + portTo + ' already exists');
+		                    return cause;
+                                  }
+                                  if (cause.message === '413 Error') { // Trento specific case
+                                    return cause;
+                                  }
+                                }
 		                return $q.reject(cause);
 		              }
 	              );
