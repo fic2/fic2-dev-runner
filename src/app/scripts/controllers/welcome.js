@@ -13,7 +13,7 @@
  */
 angular.module('srcApp')
   .controller(
-	  'WelcomeCtrl',
-	  function () {
-	    return null;
-	  });
+    'WelcomeCtrl',
+    function () {
+      return null;
+    });
