@@ -51,30 +51,30 @@ angular
       return function() {
         var deferred = $q.defer();
         var logged = !!AccessToken.get();
-	console.log('loginRequiredFactory, logged=' + logged);
-	if(! logged) {
+        console.log('loginRequiredFactory, logged=' + logged);
+        if(! logged) {
           deferred.reject('Not logged');
-	  //return Endpoint.redirect();
-	} else {
-	  console.log('loginRequiredFactory, access=', AccessToken.get());
+          //return Endpoint.redirect();
+        } else {
+          console.log('loginRequiredFactory, access=', AccessToken.get());
           deferred.resolve(AccessToken.get());
-	}
-	return deferred.promise;
+        }
+        return deferred.promise;
       };
     })
   .factory(
     'keystoneRequiredFactory',
     function($q, APP_CONFIG, loginRequiredFactory) {
       var authenticateWithKeystone = function(oauth_creds){
-	var deferred = $q.defer();
-	JSTACK.Keystone.init(APP_CONFIG['keystone-uri'] + '/v2.0/');
-	JSTACK.Keystone.authenticate(null, null, oauth_creds.access_token, 'tenant_data.id', deferred.resolve, deferred.reject);
-	return deferred.promise
-	  .catch(function(){console.log('Cannot authenticate with Keystone');});
+        var deferred = $q.defer();
+        JSTACK.Keystone.init(APP_CONFIG['keystone-uri'] + '/v2.0/');
+        JSTACK.Keystone.authenticate(null, null, oauth_creds.access_token, 'tenant_data.id', deferred.resolve, deferred.reject);
+        return deferred.promise
+          .catch(function(){console.log('Cannot authenticate with Keystone');});
       };
       return function() {
-	return loginRequiredFactory()
-	  .then(authenticateWithKeystone);
+        return loginRequiredFactory()
+          .then(authenticateWithKeystone);
       };
       
     }
@@ -114,40 +114,40 @@ angular
     function ($provide, $routeProvider, $locationProvider, $sceProvider) {
       $sceProvider.enabled(false);
       $provide.decorator('$sniffer', function($delegate) {
-			   $delegate.history = false;
-			   return $delegate;
-			 });
+        $delegate.history = false;
+        return $delegate;
+      });
       $locationProvider.html5Mode(true).hashPrefix('!');
       $routeProvider
-		.when('/access', { templateUrl: 'views/access.html',
-						   controller: 'AccessCtrl',
-						   resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
-						 })
-      	.when('/welcome', { templateUrl: 'views/welcome.html',
-			    controller: 'WelcomeCtrl'
-			  })
-		.when('/create', { templateUrl: 'views/create.html',
-						   controller: 'CreateCtrl',
-						   resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
-						 })
-      	.when('/delete', { templateUrl: 'views/delete.html',
-			    controller: 'DeleteCtrl',
+        .when('/access', { templateUrl: 'views/access.html',
+                           controller: 'AccessCtrl',
                            resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
-			  })
-		.otherwise({ redirectTo: '/welcome' });
+                         })
+        .when('/welcome', { templateUrl: 'views/welcome.html',
+                            controller: 'WelcomeCtrl'
+                          })
+        .when('/create', { templateUrl: 'views/create.html',
+                           controller: 'CreateCtrl',
+                           resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
+                         })
+        .when('/delete', { templateUrl: 'views/delete.html',
+                           controller: 'DeleteCtrl',
+                           resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
+                         })
+        .otherwise({ redirectTo: '/welcome' });
     })
   .run(
     function ($rootScope, $location, $resource, APP_CONFIG, Endpoint, $sessionStorage) {
       $rootScope.OAuthConfig = APP_CONFIG;
 
       $rootScope.$on("$routeChangeError", 
-		     function (event, current, previous, rejection) {
-		       console.log(event, current, previous, rejection);
-		       if (rejection === 'Not logged') {
+                     function (event, current, previous, rejection) {
+                       console.log(event, current, previous, rejection);
+                       if (rejection === 'Not logged') {
                          $sessionStorage.target = current;
-			 Endpoint.redirect();
-		       }
-		     });
+                         Endpoint.redirect();
+                       }
+                     });
 
       console.warn($sessionStorage.target);
       if ($sessionStorage.target) {
@@ -157,7 +157,7 @@ angular
       };
 
       // $rootScope.$on(
-      // 	'$viewContentLoaded', function(){
-      // 	  $.material.init();
-      // 	});
+      //        '$viewContentLoaded', function(){
+      //          $.material.init();
+      //        });
     });
