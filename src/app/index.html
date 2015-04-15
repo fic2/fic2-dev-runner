@@ -20,8 +20,8 @@
   </head>
   <body> <!-- ng-app="srcApp" -->
     <!--[if lt IE 7]>
-      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
+        <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
 
 
 
@@ -32,13 +32,13 @@
       <div ng-view="" ></div>
 
       <div class="footer">
-	<oauth
-	   site="{{OAuthConfig['site']}}"
-	   client-id="{{OAuthConfig['client-id']}}"
-	   redirect-uri="{{OAuthConfig['redirect-uri']}}"
-	   authorize-path="{{OAuthConfig['authorize-path']}}"
-	   scope="{{OAuthConfig['scope']}}">
-	</oauth>
+        <oauth
+           site="{{OAuthConfig['site']}}"
+           client-id="{{OAuthConfig['client-id']}}"
+           redirect-uri="{{OAuthConfig['redirect-uri']}}"
+           authorize-path="{{OAuthConfig['authorize-path']}}"
+           scope="{{OAuthConfig['scope']}}">
+        </oauth>
       </div>
     </div>
 
@@ -46,9 +46,9 @@
 
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>
-    <script src="bower_components/es5-shim/es5-shim.js"></script>
-    <script src="bower_components/json3/lib/json3.js"></script>
-    <![endif]-->
+        <script src="bower_components/es5-shim/es5-shim.js"></script>
+        <script src="bower_components/json3/lib/json3.js"></script>
+        <![endif]-->
     <!-- endbuild -->
 
     <!-- build:js(.) scripts/vendor.js -->
@@ -97,5 +97,5 @@
       });
     </script>
 
-</body>
+  </body>
 </html>
