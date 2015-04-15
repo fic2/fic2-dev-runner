@@ -14,7 +14,7 @@
 angular.module('srcApp')
   .controller(
 	  'CreateCtrl',
-	  function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, SES_CONFIG, loginRequired, os, kcSleep, coreos, panamaxFactory, panamaxUiFactory, regionSetupFactory) {
+	  function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, SES_CONFIG, loginRequired, os, coreos, panamaxFactory, panamaxUiFactory, regionSetupFactory) {
 
       $scope.se = SES_CONFIG.ses[$routeParams.seKeyName];
       $scope.targetSeName = $routeParams.seKeyName;

@@ -122,10 +122,6 @@ angular
 			 });
       $locationProvider.html5Mode(true).hashPrefix('!');
       $routeProvider
-        .when('/launch/:seKeyName', { templateUrl: 'views/launch.html',
-									  controller: 'LaunchCtrl',
-									  resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
-									})
 		.when('/access', { templateUrl: 'views/access.html',
 						   controller: 'AccessCtrl',
 						   resolve: { loginRequired: function(loginRequiredFactory){return loginRequiredFactory();}}
