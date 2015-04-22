@@ -11,6 +11,9 @@
   "cors": [
   ],
 
+  "docker-hub-mirror": {
+    "public-ip": "193.52.45.131"
+  },
 
   "regions": {
     "Lannion": {

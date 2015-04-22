@@ -8,7 +8,7 @@
 angular.module('srcApp')
   .factory(
     'coreos',
-    function() {
+    ['APP_CONFIG', function(APP_CONFIG) {
 
       var toObject = function() {
         var buildNginxServerConf = function(port, up) {
@@ -77,7 +77,7 @@ angular.module('srcApp')
 		  { name: '50-insecure-registry.conf', // https://coreos.com/docs/cluster-management/setup/cloudinit-cloud-config/
 		    content: [
 		      '[Service]',
-		      'Environment=\'DOCKER_OPTS=--log-level="debug" --registry-mirror="http://192.168.254.14:8080" --insecure-registry="0.0.0.0/0"\''
+		      'Environment=\'DOCKER_OPTS=--log-level="debug" --registry-mirror="http://' + APP_CONFIG['docker-hub-mirror']['public-ip'] + ':8080" --insecure-registry="0.0.0.0/0"\''
 		    ].join('\n')
 		  }
 		]
@@ -197,5 +197,5 @@ angular.module('srcApp')
       return {
 	toObject: toObject
       };
-    }
+    }]
   );
