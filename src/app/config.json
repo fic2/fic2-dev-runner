@@ -4,12 +4,10 @@
   "redirect-uri": "https://193.1.202.229",
   "authorize-path": "/oauth2/authorize",
   "scope": "public",
-  
+
   "cloud-uri": "https://cloud.lab.fiware.org",
   "keystone-uri": "https://cloud.lab.fiware.org/keystone",
 
-  "cors": [
-  ],
 
   "docker-hub-mirror": {
     "public-ip": "193.52.45.131"
@@ -39,15 +37,6 @@
 
   "coreos": {
     "imageId": "510259ec-b196-4b57-9260-130462128cc2",
-    "panamax_before_607_and_journalfix_imageId": "8cf7c79a-89e7-40ed-ab99-1f2269d881c0",
-    "before_custom_panamax": "9a4c7d2a-8105-4f23-abd9-199296a91f7b",
-    "panamax_hub_current_imageId": "9a4c7d2a-8105-4f23-abd9-199296a91f7b",
-    "panamax_hub_older_backup_imageId" :"96203de3-39e5-479e-a0a2-67bfad2d52e1",
-    "coreos584_imageId": "fcabe012-b577-4537-8427-e1036b0e7e67",
-    "old_imageId": "2f99979b-feb4-41ed-b677-9ffbcd346fb1"
-  },
-
-  "trash": [
-    "http://controller.xifi.imaginlab.fr:8774"
-  ]
-} 
+    "panamax_before_607_and_journalfix_imageId": "8cf7c79a-89e7-40ed-ab99-1f2269d881c0"
+  }
+}
