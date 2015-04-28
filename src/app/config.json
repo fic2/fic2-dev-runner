@@ -14,6 +14,10 @@
   },
 
   "regions": {
+    "Lannion2": {
+      "shared-network-id": "b99da016-cb02-4556-8d5f-2ce27a9a861d",
+      "external-network-id": "3dccc622-7200-40be-b523-0f73674db0e7"
+    },
     "Lannion": {
       "shared-network-id": "7edf4710-70d1-47dc-bac5-387c46f2bcfa",
       "external-network-id": "7b8beeaa-758f-4815-8559-c2a78f96b092"
