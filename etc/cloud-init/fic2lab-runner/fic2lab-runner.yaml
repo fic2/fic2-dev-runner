@@ -39,7 +39,8 @@ write_files:
       sudo journalctl -u fic2lab-runner.service
   - path: '/home/core/config.json'
     owner: 'core:core'
-    content: {
+    content: |
+      {
       "site": "https://account.lab.fiware.org",
       "client-id": "2230",
       "redirect-uri": "http://runner.developer.mediafi.org/#!/create",
@@ -49,10 +50,9 @@ write_files:
       "cloud-uri": "https://cloud.lab.fiware.org",
       "keystone-uri": "https://cloud.lab.fiware.org/keystone",
 
-
       "docker-hub-mirror": {
         "public-ip": "195.220.224.6"
-        },
+      },
 
       "regions": {
         "Lannion2": {
@@ -99,9 +99,10 @@ coreos:
         [Service]
         ExecStartPre=-/usr/bin/docker kill 'fic2lab-runner'
         ExecStartPre=-/usr/bin/docker rm -f 'fic2lab-runner'
-        ExecStart=/usr/bin/docker run --name='fic2lab-runner' --rm=true -p '80:80' -p '443:443' -v "$(pwd)/config.json:/usr/share/nginx/html/config.json" fic2/fic2-poc-decentralized-hub
+        ExecStart=/usr/bin/docker run --name='fic2lab-runner' --rm=true -p '80:80' -p '443:443' -v "/home/core/config.json:/usr/share/nginx/html/config.json" fic2/fic2-poc-decentralized-hub
         ExecStop=/usr/bin/docker stop 'fic2lab-runner'
         Restart=always
+        TimeoutStartSec=1hour 15min
         RestartSec=3
         [Install]
         WantedBy=multi-user.target
