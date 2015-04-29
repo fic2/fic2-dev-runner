@@ -1,0 +1,109 @@
+#cloud-config
+
+write_files:
+  - path: '/etc/systemd/journald.conf.d/50-limit-journal-size.conf'
+    owner: 'root:root'
+    permissions: '0644'
+    content: |
+      [Journal]
+      Compress=yes
+      SystemMaxUse=500M
+      SystemMaxFileSize=10M
+  - path: '/home/core/start.sh'
+    owner: 'core:core'
+    permissions: '0755'
+    content: |
+      #! /bin/bash -e
+      set -x
+      sudo systemctl start fic2lab-runner.service
+  - path: '/home/core/stop.sh'
+    owner: 'core:core'
+    permissions: '0755'
+    content: |
+      #! /bin/bash -e
+      set -x
+      sudo systemctl stop fic2lab-runner.service
+  - path: '/home/core/restart.sh'
+    owner: 'core:core'
+    permissions: '0755'
+    content: |
+      #! /bin/bash -e
+      set -x
+      sudo systemctl restart fic2lab-runner.service
+  - path: '/home/core/logs.sh'
+    owner: 'core:core'
+    permissions: '0755'
+    content: |
+      #! /bin/bash -e
+      set -x
+      sudo journalctl -u fic2lab-runner.service
+  - path: '/home/core/config.json'
+    owner: 'core:core'
+    content: {
+      "site": "https://account.lab.fiware.org",
+      "client-id": "2230",
+      "redirect-uri": "http://runner.developer.mediafi.org/#!/create",
+      "authorize-path": "/oauth2/authorize",
+      "scope": "public",
+
+      "cloud-uri": "https://cloud.lab.fiware.org",
+      "keystone-uri": "https://cloud.lab.fiware.org/keystone",
+
+
+      "docker-hub-mirror": {
+        "public-ip": "195.220.224.6"
+        },
+
+      "regions": {
+        "Lannion2": {
+          "shared-network-id": "b99da016-cb02-4556-8d5f-2ce27a9a861d",
+          "external-network-id": "3dccc622-7200-40be-b523-0f73674db0e7"
+        },
+        "Lannion": {
+          "shared-network-id": "7edf4710-70d1-47dc-bac5-387c46f2bcfa",
+          "external-network-id": "7b8beeaa-758f-4815-8559-c2a78f96b092"
+        },
+        "Berlin": {
+          "external-network-id": "c02a7883-ff90-4e3d-9f10-fdf2d2c0025e"
+        },
+        "Spain2": {
+          "shared-network-id": "473dacd2-42a6-4c1c-93e8-1b29f098846e",
+          "external-network-id": "51563cad-83a8-46fc-be47-9e9f3cea9ee8"
+        },
+        "Trento": {
+          "shared-network-id": "62e31eb7-fc6f-486b-8955-5caaa82b372b",
+          "external-network-id": "f0213462-9d16-4129-8091-bbea4e0a99a2"
+        },
+        "Waterford": {
+          "shared-network-id": "5d336512-acfd-4b22-9dae-e31d17a99b31",
+          "external-network-id": "932080d8-ec7e-4ed1-930a-a85f5571c6a1"
+          }
+      },
+
+      "coreos": {
+        "imageId": "510259ec-b196-4b57-9260-130462128cc2",
+        "panamax_before_607_and_journalfix_imageId": "8cf7c79a-89e7-40ed-ab99-1f2269d881c0"
+      }}
+
+coreos:
+  units:
+    - name: 'systemd-journald.service'
+      command: 'reload-or-restart'
+    - name: 'fic2lab-runner.service'
+      command: 'start'
+      content: |
+        [Unit]
+        Description=The FIC2Lab Runner application
+        After=docker.service
+        Requires=docker.service
+        [Service]
+        ExecStartPre=-/usr/bin/docker kill 'fic2lab-runner'
+        ExecStartPre=-/usr/bin/docker rm -f 'fic2lab-runner'
+        ExecStart=/usr/bin/docker run --name='fic2lab-runner' --rm=true -p '80:80' -p '443:443' -v "$(pwd)/config.json:/usr/share/nginx/html/config.json" fic2/fic2-poc-decentralized-hub
+        ExecStop=/usr/bin/docker stop 'fic2lab-runner'
+        Restart=always
+        RestartSec=3
+        [Install]
+        WantedBy=multi-user.target
+
+
