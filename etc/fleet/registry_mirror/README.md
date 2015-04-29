@@ -5,7 +5,7 @@ This configuration requires a cloud-init compatible infrastructure and a CoreOs 
 
 For example on a OpenStack, you can launch the registry mirror with (inside this directory):
 ```
-nova boot --flavor 'm1.medium' --image 'CoreOs_660.0.0' --key-name 'a_key_name' --user-data 'registry-mirror.service.yaml' --security-groups 'docker-registry-mirror-sg' --nic 'net-id=b99da016-cb02-4556-8d5f-2ce27a9a861d' 'docker-registry-mirror'
+nova boot --flavor 'm1.medium' --image 'CoreOS_660.0.0' --key-name 'a_key_name' --user-data 'registry-mirror.service.yaml' --security-groups 'docker-registry-mirror-sg' --nic 'net-id=b99da016-cb02-4556-8d5f-2ce27a9a861d' 'docker-registry-mirror'
 ```
 
 Where 'b99da016-cb02-4556-8d5f-2ce27a9a861d' is the id of a private network.
