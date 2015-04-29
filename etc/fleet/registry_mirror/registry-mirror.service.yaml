@@ -1,9 +1,23 @@
 #cloud-config
 
+write_files:
+    - path: /etc/systemd/journald.conf.d/50-limit-journal-size.conf
+      owner: root:root
+      permissions: 0644
+      content: |
+        [Journal]
+        Compress=yes
+        SystemMaxUse=500M
+        SystemMaxFileSize=10M
+
 coreos:
   units:
-    - name: 'fleet.service'
-      command: 'start'
+    - name: 'docker.service'
+      drop-ins:
+        - name: '50-insecure-registry.conf'
+          content: |
+            [Service]
+            Environment='DOCKER_OPTS=--log-level="debug" --registry-mirror="http://localhost:8080" --insecure-registry="0.0.0.0/0"'
     - name: 'registry-mirror.service'
       command: 'start'
       content: |
@@ -14,7 +28,7 @@ coreos:
         [Service]
         ExecStartPre=-/usr/bin/docker kill registry-mirror
         ExecStartPre=-/usr/bin/docker rm -f registry-mirror
-        ExecStart=/usr/bin/docker run --name=registry-mirror --rm=true -p 8080:5000 -e STANDALONE=false -e MIRROR_SOURCE=https://registry-1.docker.io -e MIRROR_SOURCE_INDEX=https://index.docker.io registry
+        ExecStart=/usr/bin/docker run --name=registry-mirror --rm=true -p 8080:5000 -e STANDALONE=false -e MIRROR_SOURCE=https://registry-1.docker.io -e MIRROR_SOURCE_INDEX=https://index.docker.io registry:0.9.1
         ExecStop=/usr/bin/docker stop registry-mirror
         Restart=always
         [Install]
@@ -31,7 +45,38 @@ coreos:
         ExecStart=/usr/bin/docker pull google/cadvisor:latest
         ExecStart=/usr/bin/docker pull centurylink/panamax-api:latest
         ExecStart=/usr/bin/docker pull centurylink/panamax-ui:latest
-        StandardInput=tty
+        #StandardInput=tty
         RemainAfterExit=yes
+        [Install]
+        WantedBy=multi-user.target
+    - name: 'preload-registry.timer'
+      command: 'start'
+      content: |
+        [Unit]
+        Description=Dayly trigger the preload-registry.service
+        After=registry-mirror.service
+        Requires=registry-mirror.service
+        [Timer]
+        OnBootSec=5min
+        OnActiveSec=1min
+        OnCalendar=daily
+        Persistent=true
+        [Install]
+        WantedBy=timers.target
+    - name: 'cadvisor.service'
+      command: 'start'
+      content: |
+        [Unit]
+        Description=Panamax Metrics
+        After=docker.service
+        Requires=docker.service
+        [Service]
+        ExecStartPre=-/usr/bin/docker pull google/cadvisor:latest
+        ExecStartPre=-/usr/bin/docker kill cadvisor
+        ExecStartPre=-/usr/bin/docker rm -f cadvisor
+        ExecStart=/usr/bin/docker run --name=cadvisor --rm=true --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro --publish=80:8080 google/cadvisor:latest -log_dir / --global_housekeeping_interval=30s --housekeeping_interval=17s
+        ExecStop=/usr/bin/docker stop cadvisor
+        Restart=always
+        RestartSec=17
         [Install]
         WantedBy=multi-user.target
