@@ -2,6 +2,7 @@
   "site": "https://account.lab.fiware.org",
   "client-id": "1906",
   "redirect-uri": "https://193.1.202.229",
+  "response-type": "code",
   "authorize-path": "/oauth2/authorize",
   "scope": "public",
 

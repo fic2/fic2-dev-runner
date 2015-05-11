@@ -44,6 +44,7 @@ write_files:
       "site": "https://account.lab.fiware.org",
       "client-id": "2230",
       "redirect-uri": "http://runner.developer.mediafi.org/#!/create",
+      "response-type": "code",
       "authorize-path": "/oauth2/authorize",
       "scope": "public",
 
