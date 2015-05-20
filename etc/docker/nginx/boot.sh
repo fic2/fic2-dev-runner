@@ -12,7 +12,7 @@ if [ ! -d $C ]; then
     openssl x509 -req -in "$C/server.csr" -signkey "$C/server.key" -out "$C/server.crt"
 fi
 
-wget "http://dhub:9000/config.json"
+#wget "http://dhub:9000/config.json"
 
 #jq -r '.["cloud-uri"], .cors[] | "add_header \"Access-Control-Allow-Origin\" \"\(.)\";"' config.json > /etc/nginx/cors.conf
 echo 'add_header "Access-Control-Allow-Origin" "*";' > /etc/nginx/cors.conf

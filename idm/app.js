@@ -1,49 +1,57 @@
 var express = require('express');
-var app = express();
+var OAuth2 = require('./oauth2').OAuth2;
 
+
+var app = express();
 
 var config = require('./config.json');
 
 
-var oauth2 = require('simple-oauth2')({
-  clientID: config['client-id'],
-  clientSecret: config['client-secret'],
-  site: config['site'],
-  tokenPath: config['authorize-path']
-});
+var oa = new OAuth2(
+  config['client-id'],
+  config['client-secret'],
+  config['site'],
+  config['authorize-path'],
+  config['token-path'],
+  config['redirect-uri']);
 
-// Authorization uri definition
-var authorization_uri = oauth2.authCode.authorizeURL({
-  redirect_uri: config['redirect-uri'],
-  scope: config['scope'],
-  state: '3(#0/!~'
-});
-
-// Initial page redirecting to Github
-app.get('/auth', function (req, res) {
-    res.redirect(authorization_uri);
-});
 
 // Callback service parsing the authorization token and asking for the access token
 app.get('/callback', function (req, res) {
   var code = req.query.code;
-  console.log('/callback');
-  oauth2.authCode.getToken({
-    code: code,
-    redirect_uri: config['redirect-uri']
-  }, saveToken);
+  // console.log('/callback : ' + code);
 
-  function saveToken(error, result) {
-    if (error) { console.log('Access Token Error', error.message); }
-    token = oauth2.accessToken.create(result);
-    res.redirect('http://runner.developer.mediafi.org/#!foobar');
+  if (!code) {
+    res.redirect(oa.getAuthorizeUrl());
+    return;
   }
+
+  oa.getOAuthAccessToken(req.query.code, function (e, results){
+    if (!results || e) {
+      console.log("Error %j", e);
+      res.sendStatus(500);
+      return;
+    }
+    // console.log('Token = %j, res = %j', results.access_token, results);
+
+    /* Location: http://example.com/cb#access_token=2YotnFZFEjr1zCsicMWpAA
+               &state=xyz&token_type=example&expires_in=3600
+    */
+    res.redirect(
+      config['idm_hack_redirect-uri_with_fragment'] +
+        '#access_token=' + results.access_token +
+        '&token_type=' + results.token_type +
+        '&expires_in=' + results.expires_in +
+        '&scope=' + results.scope //+
+        //'&refresh_token=' + results.refresh_token
+    );
+    return;
+  });
+
 });
 
-app.get('/', function (req, res) {
-  res.send('Hello<br><a href="/auth">Log in with Github</a>');
-});
+var port = 9000;
 
-app.listen(3000);
+app.listen(port);
 
-console.log('Express server started on port 3000');
+console.log('Express server started on port ' + port);
