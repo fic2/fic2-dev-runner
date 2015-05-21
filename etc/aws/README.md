@@ -4,9 +4,7 @@
 
 If you have an Amazon Web Services account, you can easily launch our preconfigured FIC2Lab runner based on Panamax.
 
-[Launch stack](https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=FIC2Lab&templateURL=https://raw.githubusercontent.com/tai-lab/fic2-poc-decentralized_hub/geo/work/etc/aws/panamax-cloudformation-ireland-nokey.json)
-
-<a href="https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=FIC2Lab&templateURL=https://raw.githubusercontent.com/tai-lab/fic2-poc-decentralized_hub/geo/work/etc/aws/panamax-cloudformation-ireland-nokey.json"><img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png"></a>
+<a href="https://console.aws.amazon.com/cloudformation/home?region=eu-west-1#/stacks/new?stackName=FIC2Lab&templateURL=https://s3-eu-west-1.amazonaws.com/fic2lab/panamax-cloudformation-ireland-nokey.json"><img src="https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png"></a>
 
 This will create in the Ireland region (eu-west-1) the following resources:
 * a security group (named PanamaxSecurityGroup)
@@ -27,5 +25,5 @@ Once the launch is complete, you will see the URL of your Panamax console in the
 https://console.aws.amazon.com/cloudformation/home?region=region#/stacks/new?stackName=stack_name&templateURL=template_location
 ```
 
-The region parameter specifies where the stack will be created. If you don't specify a region, users are directed to the region they last used. The stack_name parameter is a unique name that identifies the stack. The template_location  parameter is the URL of the template file.
+The region parameter specifies where the stack will be created. If you don't specify a region, users are directed to the region they last used. The stack_name parameter is a unique name that identifies the stack. The template_location  parameter is the URL of the template file which must be located in a AWS S3 bucket and be public.
 
