@@ -17,6 +17,7 @@ The `fic2lab-fallback_runner_panamax-sg` security group should contain the rules
   * 3000
   * 3001
   * 3002
+  * 49000-52000 range
 * For development:
   * 22
   * 80
