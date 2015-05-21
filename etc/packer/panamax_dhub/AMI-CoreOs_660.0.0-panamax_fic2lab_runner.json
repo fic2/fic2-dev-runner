@@ -1,0 +1,32 @@
+{
+  "variables":
+    {
+      "dir": "src"
+    },
+
+  "builders":
+    [
+      {
+        "type": "amazon-ebs",
+        "ami_name": "fic2lab-runner-panamax_{{isotime | clean_ami_name}}",
+        "instance_type": "t2.medium",
+        "region": "eu-west-1",
+        "source_ami": "ami-4b1c763c",
+      	"ssh_username": "core",
+        "ssh_timeout": "7m"
+      }
+    ],
+
+  "provisioners":
+    [
+      {
+        "type": "file",
+  	"source": "{{user `dir`}}",
+  	"destination": "/home/core"
+      },
+      {
+        "type": "shell",
+	"inline": "cd /home/core/{{user `dir`}} && ./install.sh && sync"
+      }
+    ]
+}
