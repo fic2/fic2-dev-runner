@@ -3,6 +3,7 @@
     "PanamaxEc2Instance" : {
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
+        "Tags" : [ {"Key" : "Name", "Value" : "FIC2Lab Panamax"} ],
         "SecurityGroups" : [ { "Ref" : "PanamaxSecurityGroup" } ],
         "ImageId" : "ami-cd8ef9ba",
         "InstanceType": "m3.medium",
@@ -13,6 +14,7 @@
     "PanamaxSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
+        "Tags" : [ {"Key" : "Name", "Value" : "FIC2Lab Panamax Security Group"} ],
         "GroupDescription" : "Enable SSH access via port 22",
         "SecurityGroupIngress" : [ 
         { "IpProtocol" : "tcp",
