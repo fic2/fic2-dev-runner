@@ -607,7 +607,7 @@ angular.module('srcApp')
 
         var start = function(oauth_access_token) {
 	        var sub = function() {
-	          return os.loadTenant(oauth_access_token);;
+	          return os.loadTenantV3(oauth_access_token);;
 	        };
 	        return retriesWithDelay(sub, 3, 1000)
 	          .catch(

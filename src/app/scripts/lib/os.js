@@ -8,7 +8,7 @@
 angular.module('srcApp')
   .factory(
     'os',
-    function($q, $resource, AccessToken, Endpoint, APP_CONFIG, regionSetupFactory) {
+    function($q, $http, $resource, AccessToken, Endpoint, APP_CONFIG, regionSetupFactory) {
       var oauth_creds = AccessToken.get();
       var getRegion = function() {
         return regionSetupFactory.getCurrentRegion();
@@ -97,6 +97,85 @@ angular.module('srcApp')
               var msg = 'Cannot retrieve tenant: ' + JSON.stringify(cause);
               return $q.reject(msg);
             });
+      };
+
+      var loadTenantV3 = function(oauth_access_token) {
+        var l = {
+          "88fc63031f43a345b4da98f499885be87224dced000ae8808da8eca709e15522": "77cf9afaed9d4a72875f4d61227b8025",
+          "e62c4d06486ca448ea0ffedbda0968ae04bfe7524930fa274a311b28f91df4d0": "00000000000000000000000000000084"
+        };
+        // var Tenants = $resource('https://cloud.lab.fiware.org/keystone/v3/authorized_organizations/' + oauth_access_token, {}, {});
+        //var Tenants = $resource(APP_CONFIG['site'] + '/user', {}, { get: {method: 'GET', params: { 'access_token': oauth_access_token }, headers: {'Access-Control-Allow-Origin' : '*'}}});
+        //var Tenants = $resource('https://cloud.lab.fiware.org/keystone/v3/auth/tokens', {}, { save: {method: 'POST', headers: {'Access-Control-Expose-Headers' : 'x-subject-token'}}});
+        var Tenants = $resource('https://cloud.lab.fiware.org/keystone/v3/auth/tokens', {}, {});
+
+        var payload =
+          {"auth":{"identity":{"methods":["oauth2"],"oauth2":{"access_token_id":oauth_access_token}},"scope":{"project":{"name": "mario-lopez-ramos cloud", "domain": {"id": "default"}}}}};
+        var deferred = $q.defer();
+        JSTACK.Comm.post('https://cloud.lab.fiware.org/keystone/v3/auth/tokens', payload, undefined,
+                        function(data, headers, extra) {
+                          debugger; // jshint ignore: line
+                          var t = headers('x-subject-token');
+                          debugger; // jshint ignore: line
+                          return deferred.resolve({"id": t});
+                        },
+                        function(data) {
+                          return deferred.reject(data);
+                        });
+
+        // var req = {
+        //   method: 'POST',
+        //   url: 'https://cloud.lab.fiware.org/keystone/v3/auth/tokens',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'Access-Control-Expose-Headers': 'X-Auth-Token, Tenant-ID'
+        //   },
+        //   data: payload
+        // };
+        // $http(req)
+        //   .success(function(data, status, headers, config) {
+        //     debugger; // jshint ignore: line
+        //     var t = headers('x-subject-token');
+        //     debugger; // jshint ignore: line
+        //     return deferred.resolve({"id": t});
+        //   })
+        //   .error(function(data, status, headers, config) {
+        //     // called asynchronously if an error occurs
+        //     // or server returns response with an error status.
+        //     return deferred.reject(data);
+        //   });
+
+
+        // Tenants.save(null, payload, function(data, headers) {
+        //   var t = headers('x-subject-token');
+        //   debugger; // jshint ignore: line
+        //   var hashed_sha256 = sjcl.codec.hex.fromBits(sjcl.hash.sha256.hash(data.id));
+        //   if (hashed_sha256 in l) {
+        //     return deferred.resolve({"id": l[hashed_sha256]});
+        //   } else {
+        //     var msg = 'Your id ' + data.id + ' (' + hashed_sha256 + ') is not registered in the idm hack';
+        //     return deferred.reject(msg);
+        //   }
+        // }, deferred.reject);
+
+        return deferred.promise;
+        // return Tenants.save(payload).$promise
+        //   .then(
+        //     function(data, headers) {
+        //       debugger; // jshint ignore: line
+        //       var hashed_sha256 = sjcl.codec.hex.fromBits(sjcl.hash.sha256.hash(data.id));
+        //       if (hashed_sha256 in l) {
+        //         return {"id": l[hashed_sha256]};
+        //       } else {
+        //         var msg = 'Your id ' + data.id + ' (' + hashed_sha256 + ') is not registered in the idm hack';
+        //         return $q.reject(msg);
+        //       }
+        //     })
+        //   .catch(
+        //     function(cause) {
+        //       var msg = 'Cannot retrieve tenant: ' + JSON.stringify(cause);
+        //       return $q.reject(msg);
+        //     });
       };
 
       var authenticateWithKeystone = function(tenant_data){
@@ -353,6 +432,7 @@ angular.module('srcApp')
       return {
         createName: createName,
         loadTenant: loadTenant,
+        loadTenantV3: loadTenantV3,
         authenticateWithKeystone: authenticateWithKeystone,
         fetchNovaServers: fetchNovaServers,
         getImageDetails: getImageDetails,
