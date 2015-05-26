@@ -79,6 +79,7 @@ JSTACK.Keystone = (function (JS, undefined) {
         if (params.version === 3) {
 
             if (token !== undefined) {
+              if (typeof token === 'string' || token instanceof String) {
                 credentials = {
                     "auth": {
                         "identity": {
@@ -91,6 +92,22 @@ JSTACK.Keystone = (function (JS, undefined) {
                         }
                     }
                 }
+              } else {
+                credentials = {
+                  "auth": {
+                    "scope": {
+                      "project":{"id": tenant, "domain": {"id": "default"}}},
+                    "identity": {
+                      "methods": [
+                        "token"
+                      ],
+                      "token": {
+                        "id": token.token
+                      }
+                    }
+                  }
+                }
+              }
             } else {
                 credentials = {
                     "auth" : {
@@ -103,7 +120,7 @@ JSTACK.Keystone = (function (JS, undefined) {
             }
 
             // User also can provide a `tenant`.
-            if (tenant !== undefined) {
+            if (tenant !== undefined && !credentials.auth.scope) {
                 credentials.auth.scope = {project: {id: tenant}};
             }
 
@@ -199,7 +216,7 @@ JSTACK.Keystone = (function (JS, undefined) {
         //       }
         if (params.version === 3) {
             JS.Comm.post(params.url + "auth/tokens", credentials, undefined, function (result, headers, token) {
-
+              debugger;
                 var resp = {
                     access:{
                         token: {

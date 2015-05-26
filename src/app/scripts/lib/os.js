@@ -41,47 +41,66 @@ angular.module('srcApp')
         var e;
 
         var compute = JSTACK.Keystone.getservice('compute');
-        for (e in compute.endpoints) {
-          compute.endpoints[e].adminURL = host + '/' + compute.endpoints[e].region + '/compute' + compute.endpoints[e].adminURL.replace(/.*:[0-9]*/, '');
-          compute.endpoints[e].publicURL = host + '/' + compute.endpoints[e].region + '/compute' + compute.endpoints[e].publicURL.replace(/.*:[0-9]*/, '');
-          compute.endpoints[e].internalURL = host + '/' + compute.endpoints[e].region + '/compute' + compute.endpoints[e].internalURL.replace(/.*:[0-9]*/, '');
-          
-          regions.push(compute.endpoints[e].region);
+        var tmp = compute.endpoints;
+        for (e in tmp) {
+          if (tmp[e].interface === 'public') {
+            tmp[e].url = host + '/' + tmp[e].region + '/compute' + tmp[e].url.replace(/.*:[0-9]*/, '');
+            compute.endpoints = [tmp[e]];
+            regions.push(compute.endpoints[e].region);
+            break;
+          }
         }
 
         var volume = JSTACK.Keystone.getservice('volume');
+        tmp = volume.endpoints;
         if (volume !== undefined) {
-          for (e in volume.endpoints) {
-            volume.endpoints[e].adminURL = host + '/' + volume.endpoints[e].region + '/volume' + volume.endpoints[e].adminURL.replace(/.*:[0-9]*/, '');
-            volume.endpoints[e].publicURL = host + '/' + volume.endpoints[e].region + '/volume' + volume.endpoints[e].publicURL.replace(/.*:[0-9]*/, '');
-            volume.endpoints[e].internalURL = host + '/' + volume.endpoints[e].region + '/volume' + volume.endpoints[e].internalURL.replace(/.*:[0-9]*/, '');
+          for (e in tmp) {
+            if (tmp[e].interface === 'public') {
+              tmp[e].url = host + '/' + tmp[e].region + '/volume' + tmp[e].url.replace(/.*:[0-9]*/, '');
+              volume.endpoints = [tmp[e]];
+              break;
+            }
           }
         }
-        
+
         var image = JSTACK.Keystone.getservice('image');
-        for (e in image.endpoints) {
-          image.endpoints[e].adminURL = host + '/' + image.endpoints[e].region + '/image' + image.endpoints[e].adminURL.replace(/.*:[0-9]*/, '');
-          image.endpoints[e].publicURL = host + '/' + image.endpoints[e].region + '/image' + image.endpoints[e].publicURL.replace(/.*:[0-9]*/, '');
-          image.endpoints[e].internalURL = host + '/' + image.endpoints[e].region + '/image' + image.endpoints[e].internalURL.replace(/.*:[0-9]*/, '');
+        tmp = image.endpoints;
+        for (e in tmp) {
+            if (tmp[e].interface === 'public') {
+              tmp[e].url = host + '/' + tmp[e].region + '/image' + tmp[e].url.replace(/.*:[0-9]*/, '');
+              image.endpoints = [tmp[e]];
+              break;
+            }
         }
 
         var objectstorage = JSTACK.Keystone.getservice('object-store');
+        tmp = objectstorage.endpoints;
         if (objectstorage !== undefined) {
-          for (e in objectstorage.endpoints) {
-            objectstorage.endpoints[e].adminURL = host + '/' + objectstorage.endpoints[e].region  + '/object-store' + objectstorage.endpoints[e].adminURL.replace(/.*:[0-9]*/, '');
-            objectstorage.endpoints[e].publicURL = host + '/' + objectstorage.endpoints[e].region  + '/object-store' + objectstorage.endpoints[e].publicURL.replace(/.*:[0-9]*/, '');
-            objectstorage.endpoints[e].internalURL = host + '/' + objectstorage.endpoints[e].region  + '/object-store' + objectstorage.endpoints[e].internalURL.replace(/.*:[0-9]*/, '');
+          for (e in tmp) {
+            if (tmp[e].interface === 'public') {
+              tmp[e].url = host + '/' + tmp[e].region + '/object-store' + tmp[e].url.replace(/.*:[0-9]*/, '');
+              objectstorage.endpoints = [tmp[e]];
+              break;
+            }
           }
         }
 
         var neutron = JSTACK.Keystone.getservice('network');
+        tmp = neutron.endpoints;
         if (neutron !== undefined) {
-          for (e in neutron.endpoints) {
-            neutron.endpoints[e].adminURL = host + '/' + neutron.endpoints[e].region + '/network' + neutron.endpoints[e].adminURL.replace(/.*:[0-9]*/, '');
-            neutron.endpoints[e].publicURL = host + '/' + neutron.endpoints[e].region + '/network' + neutron.endpoints[e].publicURL.replace(/.*:[0-9]*/, '');
-            neutron.endpoints[e].internalURL = host + '/' + neutron.endpoints[e].region + '/network' + neutron.endpoints[e].internalURL.replace(/.*:[0-9]*/, '');
+          for (e in tmp) {
+            if (tmp[e].interface === 'public') {
+              tmp[e].url = host + '/' + tmp[e].region + '/network' + tmp[e].url.replace(/.*:[0-9]*/, '');
+              neutron.endpoints = [tmp[e]];
+              break;
+            }
           }
         }
+/*
+.adminURL
+.publicURL
+.internalURL
+*/
       }
 
       var loadTenant = function(oauth_access_token) {
@@ -99,6 +118,7 @@ angular.module('srcApp')
             });
       };
 
+
       var loadTenantV3 = function(oauth_access_token) {
         var l = {
           "88fc63031f43a345b4da98f499885be87224dced000ae8808da8eca709e15522": "77cf9afaed9d4a72875f4d61227b8025",
@@ -115,7 +135,7 @@ angular.module('srcApp')
         JSTACK.Comm.post('https://cloud.lab.fiware.org/keystone/v3/auth/tokens', payload, undefined,
                         function(data, headers, extra) {
                           debugger; // jshint ignore: line
-                          var t = headers('x-subject-token');
+                          var t = extra;
                           debugger; // jshint ignore: line
                           return deferred.resolve({"id": t});
                         },
@@ -178,13 +198,40 @@ angular.module('srcApp')
         //     });
       };
 
-      var authenticateWithKeystone = function(tenant_data){
-        JSTACK.Keystone.init(APP_CONFIG['keystone-uri'] + '/v2.0/');
+      var getAauthenticateResult = function(X_Auth_Token, tenantId, tenantName, userId, userName, expiresAt, issuedAt) {
+        return {"token": {"methods": ["token", "oauth2"], "roles": [{"id": "9eb0158e4c0b48d4a06c6144ab08a25d", "name": "owner"}], "expires_at": expiresAt, "project": {"domain": {"id": "default", "name": "Default"}, "id": tenantId, "name": tenantName}, "catalog": [{"endpoints": [{"url": "http://api2.xifi.imaginlab.fr:9696/", "region": "Lannion2", "interface": "public", "id": "0fb78716d29e4391b2ec65ba9e256662"},{"url": "http://api2.xifi.imaginlab.fr:9696/", "region": "Lannion2", "interface": "admin", "id": "fe002ccccfbe4f45b083f004b0095dd1"}], "type": "network", "id": "1e58c6763eaf4ea581712b22f319c365"}, {"endpoints": [{"url": "http://api2.xifi.imaginlab.fr:8080/v1", "region": "Lannion2", "interface": "admin", "id": "c6fa65172d08464a9bf524aa3ff9e83f"}, {"url": "http://api2.xifi.imaginlab.fr:8080/v1/AUTH_" + tenantId, "region": "Lannion2", "interface": "public", "id": "bc32c74f559e40959d1bc37c0eae1489"}], "type": "object-store", "id": "9b0870fc187c476a90d645e9d264febc"}, {"endpoints": [{"url": "http://api2.xifi.imaginlab.fr:9292/v1", "region": "Lannion2", "interface": "admin", "id": "da451cc47b554952b2989e8c6768c968"}, {"url": "http://api2.xifi.imaginlab.fr:9292/v1", "region": "Lannion2", "interface": "public", "id": "ccba4bcf1003422b89a0359c2ab3616a"}], "type": "image", "id": "25511e24ca7d41e1ae211873f7ac4521"}, {"endpoints": [{"url": "http://api2.xifi.imaginlab.fr:8774/v2/" + tenantId, "region": "Lannion2", "interface": "public", "id": "4029fb0913ba467d8c76d13bd2ea9b57"}, {"url": "http://api2.xifi.imaginlab.fr:8774/v2/" + tenantId, "region": "Lannion2", "interface": "admin", "id": "6337ba2812584c18b3bc5c3bee706ddd"}], "type": "compute", "id": "0454e2304b0e4a0489d945092d95ea4a"}, {"endpoints": [{"url": "http://api2.xifi.imaginlab.fr:8776/v1/" + tenantId, "region": "Lannion2", "interface": "admin", "id": "a8740c649bae403a85d02a705c7b2e05"}, {"url": "http://api2.xifi.imaginlab.fr:8776/v1/" + tenantId, "region": "Lannion2", "interface": "public", "id": "ef7e7f097e0e41dd85e5d8dc8ca15969"}], "type": "volume", "id": "dcc80506d0014f4b8372f090c6baa6d9"}], "extras": {}, "user": {"domain": {"id": "default", "name": "Default"}, "id": userId, "name": userName}, "audit_ids": ["D2qKYCf7Qr2FIPEQW-4xWQ", "qP0i2CPKQtmHo_IO0y9JpA"], "issued_at": issuedAt, "id": X_Auth_Token, "expires": expiresAt, "tenant": {"id": tenantId, "name": tenantName}}};
+      };
+
+
+      var authenticateWithKeystone = function(idm_hack){
+        JSTACK.Keystone.init(APP_CONFIG['keystone-uri'] + '/v3/');
         var sub = function(counter) {
           var deferred = $q.defer();
-          JSTACK.Keystone.authenticate(null, null, oauth_creds.access_token, tenant_data.id, deferred.resolve, deferred.reject);
-          return deferred.promise
+          //debugger;
+          var base = getAauthenticateResult(
+            idm_hack.X_Auth_Token, idm_hack.tenantId,
+            idm_hack.userId, idm_hack.userName,
+            idm_hack.tenantName, idm_hack.expiresAt,
+            idm_hack.issuedAt);
+          var result = {
+            access:{
+              token: base.token,
+              serviceCatalog: base.token.catalog,
+              user: {id: idm_hack.userId, name: idm_hack.userName}
+            }
+          };
+          JSTACK.Keystone.params.currentstate = JSTACK.Keystone.STATES.AUTHENTICATED;
+          JSTACK.Keystone.params.access = result.access;
+          JSTACK.Keystone.params.token = idm_hack.X_Auth_Token;
+
+          J//STACK.Keystone.authenticate(null, null, {token: idm_hack.X_Auth_Token}, idm_hack.tenantId, deferred.resolve, deferred.reject);
+          //return deferred.promise
+          return $q.when(result)
             .then(function(accessData){changeEndpoints(APP_CONFIG['cloud-uri']); return accessData;})
+            .then(function(accessData) {
+              JSTACK.Keystone.params.token = idm_hack.X_Auth_Token;
+              return accessData;
+            })
             .catch(
               function(cause){
                 //debugger; // jshint ignore: line
@@ -367,9 +414,9 @@ angular.module('srcApp')
         return deferred.promise;
       };
 
-      var associateFloatingIp = function(serverId, address){
+      var associateFloatingIp = function(serverId, address, fixedAddr){
         var deferred = $q.defer();
-        JSTACK.Nova.associatefloatingIP(serverId, address, null, deferred.resolve, deferred.reject, getRegion());
+        JSTACK.Nova.associatefloatingIP(serverId, address, fixedAddr, deferred.resolve, deferred.reject, getRegion());
         return deferred.promise;
       };
 

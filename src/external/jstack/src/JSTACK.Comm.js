@@ -99,7 +99,8 @@ JSTACK.Comm = (function (JS, undefined) {
                     if (xhr.responseText !== undefined && xhr.responseText !== '') {
                         result = JSON.parse(xhr.responseText);
                     }
-                    callBackOK(result, xhr.getAllResponseHeaders(), xhr.getResponseHeader('x-subject-token'));
+                  // xhr.getResponseHeader('x-subject-token')
+                    callBackOK(result, xhr.getAllResponseHeaders(), null);
                     break;
 
                 // In case of error it sends an error message to `callbackError`.

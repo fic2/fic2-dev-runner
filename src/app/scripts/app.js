@@ -56,8 +56,60 @@ angular
           deferred.reject('Not logged');
           //return Endpoint.redirect();
         } else {
+          var tmp = $location.hash();
           console.log('loginRequiredFactory, access=', AccessToken.get());
-          deferred.resolve(AccessToken.get());
+          var result = {};
+          var entries = tmp.split('&');
+          for (var i = 0; i < entries.length; i++) {
+            var sub = entries[i].split('=');
+            if (sub.length == 2) {
+              if (sub[0].length != 0) {
+                result[sub[0]] = sub[1];
+              }
+              if (sub[0] === 'X-Auth-Token') {
+                result.X_Auth_Token = sub[1];
+              }
+              /*if (sub[0] === 'displayName') {
+                result.displayName = sub[1];
+              } else if (sub[0] === 'X-Auth-Token') {
+                result.X_Auth_Token = sub[1];
+              } else if (sub[0] === 'tenantId') {
+                result.tenantId = sub[1];
+              } else if (sub[0] === 'tenantName') {
+                result.tenantName = sub[1];
+              }*/
+            }
+          }
+          var l = ['displayName', 'X_Auth_Token', 'tenantId', 'tenantName', 'expiresAt',
+                   'issuedAt', 'userId', 'userName'];
+          var check = true;
+          for (var e in l) {
+            check = check && (l[e] in  result);
+          };
+          if (check) {
+            $rootScope.idm_hack = result;
+          }
+          $location.hash('');
+          console.log('idm_hack: ', $rootScope.idm_hack);
+          //debugger;
+              /*&&
+              'displayName' in $rootScope.idm_hack
+              && 'X_Auth_Token' in $rootScope.idm_hack
+              && 'tenantId' in $rootScope.idm_hack
+              && 'tenantName' in $rootScope.idm_hack*/
+          if ('idm_hack' in $rootScope) {
+            check = true;
+            for (var e in l) {
+              check = check && (l[e] in  $rootScope.idm_hack);
+            };
+            if (check) {
+              deferred.resolve(AccessToken.get());
+            } else {
+              deferred.reject('Not logged');
+            }
+          } else {
+            deferred.reject('Not logged');
+          }
         }
         return deferred.promise;
       };

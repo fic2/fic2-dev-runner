@@ -274,6 +274,7 @@ JSTACK.Nova = (function (JS, undefined) {
         
         data = {
             "server" : {
+                "config_drive": true,
                 "name" : name,
                 "imageRef" : imageRef,
                 "flavorRef" : flavorRef

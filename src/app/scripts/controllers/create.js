@@ -14,7 +14,7 @@
 angular.module('srcApp')
   .controller(
 	  'CreateCtrl',
-	  function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, loginRequired, os, coreos, panamaxFactory, panamaxUiFactory, regionSetupFactory) {
+	  function ($scope, $rootScope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, loginRequired, os, coreos, panamaxFactory, panamaxUiFactory, regionSetupFactory) {
 
       $scope.targetSeName = $routeParams.seKeyName;
       $scope.failure = 'An error occured';
@@ -27,6 +27,7 @@ angular.module('srcApp')
         var currentRegionName = regionSetupFactory.getCurrentRegion();
         var currentRegionConfig = APP_CONFIG.regions[currentRegionName];
         var computeNoMoreIpRegex = new RegExp('No more floating ips in pool ' + currentRegionConfig['external-network-id'] + '[.]');
+        var secuGroupAlreadyExists = new RegExp('Security group rule already exists');
 
 
         var wrap = function(text, wrapped_promise){
@@ -192,6 +193,12 @@ angular.module('srcApp')
 	              .catch(
 		              function(cause){
                                 if ('message' in cause) {
+                                  if (cause.message === '403 Error' && 'body' in cause) { // Lanion2 case
+                                    if (secuGroupAlreadyExists.test(cause.body)) {
+                                      console.info('Rules ' + portFrom + ':' + portTo + ' already exists');
+                                      return cause;
+                                    }
+                                  }
                                   if (cause.message === '404 Error') {
                                     console.info('Rules ' + portFrom + ':' + portTo + ' already exists');
 		                    return cause;
@@ -275,6 +282,32 @@ angular.module('srcApp')
 	              return $q.reject(cause);	      
 	            }
 	          );
+        };
+
+        var waitForServer = function() {
+          var sub = function() {
+            return os.getServerDetail($scope.serverData.id)
+              .then(function(data) {
+                var status = data.status;
+                if (status === 'ERROR' || status === 'DELETED') {
+                  $scope.failure = 'Unable to create the server';
+                  return $q.reject(data.fault);
+                }
+                //debugger;
+                if ('node-int-net-01' in data.server.addresses) {
+                  $scope.serverPrivateAddr = data.server.addresses['node-int-net-01'][0].addr;
+                  return null;
+                }
+                $scope.failure = 'The instance is missing an internal ip';
+                return $q.reject(data);
+              });
+          };
+
+          return retriesWithDelay(sub, 60, 4000)
+            .then(null, function(cause) { //cause.status == 0 || cause.status == 502
+              $scope.failure = 'The function for checking the server state timed out';
+	      return $q.reject('TimeOut');
+            });
         };
 
         
@@ -396,7 +429,7 @@ angular.module('srcApp')
 	            $scope.failure = 'The function for associating an ip timed out';
 	            return $q.reject('TimeOut');
 	          }
-	          return $timeout(function(){ return os.associateFloatingIp($scope.serverData.id, $scope.floatingIp.ip); }, 5000)
+	          return $timeout(function(){ return os.associateFloatingIp($scope.serverData.id, $scope.floatingIp.ip, $scope.serverPrivateAddr); }, 5000)
 	            .catch(
 	              function(cause) {
 		              //debugger; // jshint ignore: line
@@ -420,7 +453,7 @@ angular.module('srcApp')
 		                  var current = floatingIps[index];
 		                  //debugger; // jshint ignore: line
 		                  if (current.pool === $scope.externalNetworkData.name &&
-		                      current.instance_id === $scope.serverData.id) {
+		                      (current.instance_id === $scope.serverData.id || current.fixed_ip === $scope.serverPrivateAddr)) {
 		                    $scope.floatingIp = current;
 		                    return current;
 		                  }
@@ -607,7 +640,7 @@ angular.module('srcApp')
 
         var start = function(oauth_access_token) {
 	        var sub = function() {
-	          return os.loadTenantV3(oauth_access_token);;
+	          return  $q.when($rootScope.idm_hack);
 	        };
 	        return retriesWithDelay(sub, 3, 1000)
 	          .catch(
@@ -642,6 +675,7 @@ angular.module('srcApp')
 	// .then(wrap('Creating the server', bootServer))
 	  .then(wrap('Creating the server', getOrBootServer))
 	  .then(wrap('Finding or allocating a floating ip', getOrAllocateFloatingIp))
+          .then(wrap('Waiting for the server activation', waitForServer))
 	  .then(wrap('Associating the floating ip to the newly created instance', tryToAssociateIp))
 	  .then(wrap('Waiting for Panamax', waitForPanamax))
 	  .then(wrap('Injecting the SE repository', injectTemplatesRepo))
