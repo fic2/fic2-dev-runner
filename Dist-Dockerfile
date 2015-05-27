@@ -1,11 +1,20 @@
 FROM nginx
 
 RUN apt-get -y update \
-    && apt-get -y install ca-certificates
+    && apt-get -y install ca-certificates nodejs nodejs-legacy npm wget \
+    && wget https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego -P /usr/local/bin \
+    && chmod +x /usr/local/bin/forego
 
 ADD src/dist /usr/share/nginx/html
 
-ADD prod/nginx /etc/nginx
+ADD prod/ /etc/
+
+WORKDIR /root
+
+ADD idm/ /root/
+
+RUN npm install
 
 EXPOSE 80 443
 
+CMD ["/usr/local/bin/forego", "start", "-f", "/etc/Procfile"]
