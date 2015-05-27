@@ -1,2 +1,2 @@
 runner: /usr/sbin/nginx -g 'daemon off;'
-idm_hack: /usr/bin/node app.js
+idm_hack: env node app.js

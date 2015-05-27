@@ -13,7 +13,8 @@ RUN apt-get -y install ca-certificates wget \
     && wget https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego -P /usr/local/bin \
     && chmod +x /usr/local/bin/forego
 
-ADD src idm /tmp/
+ADD src /tmp/src/
+ADD idm /tmp/idm/
 
 RUN cd /tmp/src \
     && npm install -g grunt-cli bower \
@@ -26,7 +27,8 @@ RUN cd /tmp/src \
 RUN mkdir -p /usr/share/nginx/html \
     && mv -T /tmp/src/dist /usr/share/nginx/html
 
-RUN rm -rf nginx-1.7.10 /tmp/src
+RUN rm -rf nginx-1.7.10
+#/tmp/src
 
 RUN sed -r -i 's/["]redirect-uri.+/"redirect-uri": "http:\/\/runner.developer.mediafi.org\/#!\/create",/g' /usr/share/nginx/html/config.json \
     && sed -r -i 's/["]client-id.+/"client-id": "2230",/g' /usr/share/nginx/html/config.json
