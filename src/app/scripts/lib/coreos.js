@@ -118,6 +118,9 @@ angular.module('srcApp')
 	      { name: 'systemd-journal-gatewayd.service',
 	      	command: 'start'
 	      },
+              { name: 'etcd.service',
+                command: 'start'
+              },
 	      { name: 'fleet.service',
 		command: 'start'
 	      },
@@ -188,7 +191,21 @@ angular.module('srcApp')
 		  '[Install]',
 		  'WantedBy=multi-user.target'
 		].join('\n')
-	      }
+	      },
+              {
+                name: 'fix-eth0.service',
+                command: 'start',
+                content: [
+                  '[Unit]',
+                  'Description=Update eth0 to go around network slowness',
+                  'After=network.target',
+                  '[Service]',
+                  'ExecStart=/usr/sbin/ethtool -K eth0 tso off',
+                  'Type=oneshot',
+		  '[Install]',
+		  'WantedBy=multi-user.target'
+                ].join('\n')
+              }
 	    ]
 	  }
 	};

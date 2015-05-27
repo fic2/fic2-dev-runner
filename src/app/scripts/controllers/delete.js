@@ -14,7 +14,7 @@
 angular.module('srcApp')
   .controller(
     'DeleteCtrl',
-    function ($scope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, loginRequired, os, hlos) {
+    function ($scope, $rootScope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, loginRequired, os, hlos) {
 
       $scope.targetSeName = $routeParams.seKeyName;
       $scope.failure = 'An error occured';
@@ -145,7 +145,7 @@ angular.module('srcApp')
 
         var start = function(oauth_access_token) {
           var sub = function() {
-            return os.loadTenant(oauth_access_token);;
+            return $q.when($rootScope.idm_hack);
           };
           return retriesWithDelay(sub, 3, 1000)
             .catch(
