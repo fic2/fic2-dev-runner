@@ -685,7 +685,7 @@ angular.module('srcApp')
 	  .then(
 	    function() {
 	      //debugger; // jshint ignore: line
-	      $scope.success_target_url = 'http://' + $scope.floatingIp.ip + ':3000';
+	      $scope.success_target_url = 'http://' + $scope.floatingIp.ip + ':3000/search/new';
 	      $scope.success = 'Panamax should be up & accessible (' + $scope.success_target_url + ')';
 	      angular.element('#success-dialog_button').trigger('click');
 	    })
