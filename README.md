@@ -39,3 +39,43 @@ If not, the Runner can be restarted with the command:
 ```
 sudo systemctl restart fic2lab-runner.service
 ```
+
+
+## Development
+
+### Building the base development image
+
+Two Dockerfiles are provided to build a complete environment for developing.
+They allow to dynamically code into the application while seeing the update live.
+
+First, go into the `etc/docker/nginx` directory and call the `./build.sh` script.
+After completion, a `fic2-dhub-nginx` docker image will have been created.
+
+Then, go into the `etc/docker/dev` directory and call the `./build.sh` script.
+After completion, a `fic2-dhub-dev` docker image will have been created.
+
+## Live coding
+
+This requires 3 ssh terminals:
+* The Runner app
+* The server managing the OAuth2 workflow
+* The nginx server for ssl offloading
+
+First go into the root directory `fic2-poc-decentralized_hub`.
+
+* In the first terminal, call the `./dev.sh` scritp to start a terminal running in a Docker container. This containers has all the required tools (nodejs, npm, grunt) for developing.
+  * `npm install` will fetch all the latest tools (server side).
+  * `bower install` will fetch and install every librairies used in the Runner (browse side).
+  * `grunt serve` will start an Express server distributing the Runner with a livereload feature.
+* In the second terminal, call the `./dev-idm_hack.sh` script to start a terminal containing the nodejs environment.
+  * go into the `idm` directory.
+  * `npm install` to fetch all the dependencies.
+  * `node app.js` to start the server
+* In the third terminal:
+  * go into the `etc/docker/nginx` directory
+  * call the `./launch.sh` script to start the nginx server.
+
+
+Now you should be able to browse the Runner on your development server (port 443).
+Don't forget to update the `src/app/config.json` file with the correct OAuth parameters.
+

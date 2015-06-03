@@ -1,13 +1,13 @@
 {
   "site": "https://account.lab.fiware.org",
-  "client-id": "1d75df2ec0c1478db98a3c8db3169d63",
-  "client-secret": "032b1d03f9d544ec9e22ef86ce61ddf8",
-  "redirect-uri": "https://195.220.224.10/callback",
+  "client-id": "2bcceb077e6a47d0a89d05dfd26a1fc8",
+  "client-secret": "9ebfad4931074cefbbfa793eb20a3f93",
+  "redirect-uri": "https://195.220.224.42/callback",
   "response-type": "code",
   "authorize-path": "/oauth2/authorize/",
   "token-path": "/oauth2/token",
   "scope": "public",
-  "idm_hack_redirect-uri_with_fragment": "https://195.220.224.10/#!/create",
+  "idm_hack_redirect-uri_with_fragment": "https://195.220.224.42/#!/create",
 
   "cloud-uri": "https://cloud.lab.fiware.org",
   "keystone-uri": "https://cloud.lab.fiware.org/keystone",
