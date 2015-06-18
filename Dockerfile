@@ -1,51 +1,36 @@
 FROM node:0.10.35
 
-RUN apt-get -y install ca-certificates wget \
+ENV VERSION='v0.0.0'
+
+WORKDIR /root
+
+# RUN apt-get -y update \
+#     && apt-get -y install ca-certificates libpcre3 libpcre3-dev \
+
+RUN curl -SL -o /usr/local/bin/forego https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego \
+    && chmod +x /usr/local/bin/forego \
+    && adduser --disabled-password --gecos '' nginx \
     && curl -SLO http://nginx.org/download/nginx-1.7.10.tar.gz \
     && tar -xvf nginx-1.7.10.tar.gz \
     && rm nginx-1.7.10.tar.gz \
     && cd nginx-1.7.10 \
-    && ./configure --with-http_ssl_module --with-http_spdy_module --with-http_gzip_static_module --with-http_auth_request_module \
+    && ./configure --prefix=/usr --conf-path=/etc/nginx/nginx.conf --user=nginx --group=nginx --with-poll_module --without-select_module --with-http_ssl_module --with-http_spdy_module --with-http_gzip_static_module --with-http_auth_request_module --with-pcre --with-pcre-jit \
     && make \
     && make install \
+    && mkdir -p /usr/share/nginx/html \
     && mkdir /var/log/nginx \
-    && ln -s /usr/local/nginx/sbin/nginx /usr/sbin/nginx \
-    && wget https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego -P /usr/local/bin \
-    && chmod +x /usr/local/bin/forego
+    && ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log \
+    && rm -rf nginx-1.7.10
 
-ADD src /tmp/src/
-ADD idm /tmp/idm/
+RUN curl -SL "https://github.com/fic2/fic2-dev-runner/releases/download/${VERSION}/fic2-dev-runner_${VERSION}.tar.gz" | tar -zx -C /usr/share/nginx/html --wildcards 'fic2-dev-runner_v*/dist' --strip 2
 
-RUN cd /tmp/src \
-    && npm install -g grunt-cli bower \
-    && npm install \
-    && bower --allow-root --config.interactive=false install \
-    && grunt build \
-    && cd /tmp/idm \
+RUN mkdir src && \
+    curl -SL "https://github.com/fic2/fic2-dev-runner/archive/${VERSION}.tar.gz" | tar -zx -C src \
+    && mv src/prod/* /etc/ \
+    && mv src/idm/* /root/ \
     && npm install
 
-RUN mkdir -p /usr/share/nginx/html \
-    && mv -T /tmp/src/dist /usr/share/nginx/html
-
-RUN rm -rf nginx-1.7.10
-#/tmp/src
-
-RUN sed -r -i 's/["]redirect-uri.+/"redirect-uri": "http:\/\/runner.developer.mediafi.org\/#!\/create",/g' /usr/share/nginx/html/config.json \
-    && sed -r -i 's/["]client-id.+/"client-id": "2230",/g' /usr/share/nginx/html/config.json
-
-# forward request and error logs to docker log collector
-RUN ln -sf /dev/stdout /var/log/nginx/access.log \
-    && ln -sf /dev/stderr /var/log/nginx/error.log \
-    && adduser --disabled-password --gecos '' nginx \
-    && ln -s /usr/local/nginx/conf /etc/nginx
-
-VOLUME ["/var/cache/nginx"]
-
-ADD prod/nginx /usr/local/nginx/conf
-ADD prod/Procfile /etc/
-
 EXPOSE 80 443
-
-WORKDIR /tmp/idm
 
 CMD ["/usr/local/bin/forego", "start", "-f", "/etc/Procfile"]
