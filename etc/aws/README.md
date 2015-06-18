@@ -14,8 +14,8 @@ Once the launch is complete, you will see the URL of your Panamax console in the
 
 ## Build
 
-* Use Packer to build your own AMI image and make it public in a given AWS region: https://github.com/tai-lab/fic2-poc-decentralized_hub/tree/geo/work/etc/packer/panamax_dhub
-* Configure the cloud init data: https://github.com/tai-lab/fic2-poc-decentralized_hub/tree/geo/work/etc/cloud-init
+* Use Packer to build your own AMI image and make it public in a given AWS region: https://github.com/fic2/fic2-dev-runner/tree/geo/work/etc/packer/panamax_dhub
+* Configure the cloud init data: https://github.com/fic2/fic2-dev-runner/tree/geo/work/etc/cloud-init
 * Update the CloudFormation manifest here with:
  * The new AMI id
  * The cloud init data encoded in base64 (`cat input.yaml | base64 | tr -d '\n'`)

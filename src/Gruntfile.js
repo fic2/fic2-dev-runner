@@ -397,13 +397,13 @@ module.exports = function (grunt) {
     compress: {
       dist: {
         options: {
-          archive: 'releases/fic2lab-runner_<%= yeoman.pkg.version %>.tgz',
+          archive: 'releases/fic2-dev-runner_v<%= yeoman.pkg.version %>.tar.gz',
           mode: 'tgz',
           level: 9
         },
         cwd: './',
         src: ['<%= yeoman.dist %>/**/*'],
-        dest: ''
+        dest: 'fic2-dev-runner_v<%= yeoman.pkg.version %>'
       }
     }
   });

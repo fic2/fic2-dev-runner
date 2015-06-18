@@ -61,7 +61,7 @@ This requires 3 ssh terminals:
 * The server managing the OAuth2 workflow
 * The nginx server for ssl offloading
 
-First go into the root directory `fic2-poc-decentralized_hub`.
+First go into the root directory `fic2-dev-runner`.
 
 * In the first terminal, call the `./dev.sh` scritp to start a terminal running in a Docker container. This containers has all the required tools (nodejs, npm, grunt) for developing.
   * `npm install` will fetch all the latest tools (server side).
