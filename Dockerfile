@@ -4,8 +4,8 @@ ENV VERSION='v0.0.0'
 
 WORKDIR /root
 
-# RUN apt-get -y update \
-#     && apt-get -y install ca-certificates libpcre3 libpcre3-dev \
+RUN apt-get -y update \
+    && apt-get -y install ca-certificates libpcre3 libpcre3-dev rsync
 
 RUN curl -SL -o /usr/local/bin/forego https://godist.herokuapp.com/projects/ddollar/forego/releases/current/linux-amd64/forego \
     && chmod +x /usr/local/bin/forego \
@@ -25,11 +25,15 @@ RUN curl -SL -o /usr/local/bin/forego https://godist.herokuapp.com/projects/ddol
 
 RUN curl -SL "https://github.com/fic2/fic2-dev-runner/releases/download/${VERSION}/fic2-dev-runner_${VERSION}.tar.gz" | tar -zx -C /usr/share/nginx/html --wildcards 'fic2-dev-runner_v*/dist' --strip 2
 
-RUN mkdir src && \
-    curl -SL "https://github.com/fic2/fic2-dev-runner/archive/${VERSION}.tar.gz" | tar -zx -C src \
-    && mv src/prod/* /etc/ \
-    && mv src/idm/* /root/ \
-    && npm install
+RUN mkdir /tmp/src && \
+    curl -SL "https://github.com/fic2/fic2-dev-runner/archive/${VERSION}.tar.gz" | tar -zx -C /tmp/src --strip 1 \
+    && rsync -vah /tmp/src/prod/ /etc/ \
+    && mv /tmp/src/idm/* /root/ \
+    && npm install \
+    && rm -rf /tmp/src \
+    && unlink config.json \
+    && ln -s /usr/share/nginx/html/config.json
+
 
 EXPOSE 80 443
 
