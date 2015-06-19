@@ -34,6 +34,7 @@ RUN mkdir /tmp/src && \
     && unlink config.json \
     && ln -s /usr/share/nginx/html/config.json
 
+RUN find /usr/share/nginx/html -type f -exec /bin/bash -c "/bin/gzip --verbose -9 -c '{}' > '{}'.gz" \;
 
 EXPOSE 80 443
 
