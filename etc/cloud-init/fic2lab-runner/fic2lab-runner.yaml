@@ -42,11 +42,14 @@ write_files:
     content: |
       {
       "site": "https://account.lab.fiware.org",
-      "client-id": "2230",
-      "redirect-uri": "http://runner.developer.mediafi.org/#!/create",
+      "client-id": "2bc",
+      "client-secret": "some_secret",
+      "redirect-uri": "https://runner.developer.mediafi.org/callback",
       "response-type": "code",
       "authorize-path": "/oauth2/authorize",
+      "token-path": "/oauth2/token",
       "scope": "public",
+      "idm_hack_redirect-uri_with_fragment": "https://runner.developer.mediafi.org/#!/create",
 
       "cloud-uri": "https://cloud.lab.fiware.org",
       "keystone-uri": "https://cloud.lab.fiware.org/keystone",
@@ -100,7 +103,7 @@ coreos:
         [Service]
         ExecStartPre=-/usr/bin/docker kill 'fic2lab-runner'
         ExecStartPre=-/usr/bin/docker rm -f 'fic2lab-runner'
-        ExecStart=/usr/bin/docker run --name='fic2lab-runner' --rm=true -p '80:80' -p '443:443' -v "/home/core/config.json:/usr/share/nginx/html/config.json" fic2/fic2-poc-decentralized-hub
+        ExecStart=/usr/bin/docker run --name='fic2lab-runner' --rm=true -p '80:80' -p '443:443' -v "/home/core/config.json:/usr/share/nginx/html/config.json" devmediafi/mediafi-dev-runner:latest
         ExecStop=/usr/bin/docker stop 'fic2lab-runner'
         Restart=always
         TimeoutStartSec=1hour 15min
