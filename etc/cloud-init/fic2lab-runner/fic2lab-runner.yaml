@@ -101,9 +101,10 @@ coreos:
         After=docker.service
         Requires=docker.service
         [Service]
+        ExecStartPre=-/bin/bash -c "/usr/bin/gzip -9 -c '/home/core/config.json' > /home/core/config.json.gz"
         ExecStartPre=-/usr/bin/docker kill 'fic2lab-runner'
         ExecStartPre=-/usr/bin/docker rm -f 'fic2lab-runner'
-        ExecStart=/usr/bin/docker run --name='fic2lab-runner' --rm=true -p '80:80' -p '443:443' -v "/home/core/config.json:/usr/share/nginx/html/config.json" devmediafi/mediafi-dev-runner:latest
+        ExecStart=/usr/bin/docker run --name='fic2lab-runner' --rm=true -p '80:80' -p '443:443' -v "/home/core/config.json:/usr/share/nginx/html/config.json" -v "/home/core/config.json.gz:/usr/share/nginx/html/config.json.gz" devmediafi/mediafi-dev-runner:latest
         ExecStop=/usr/bin/docker stop 'fic2lab-runner'
         Restart=always
         TimeoutStartSec=1hour 15min

@@ -109,7 +109,7 @@ coreos:
         [Service]
         ExecStartPre=-/usr/bin/docker kill PMX_API
         ExecStartPre=-/usr/bin/docker rm PMX_API
-        ExecStart=/usr/bin/docker run --name=PMX_API --rm=true -v /var/panamax-data:/usr/src/app/db/mnt -v /var/run/docker.sock:/run/docker.sock:rw  -e JOURNAL_ENDPOINT=http://172.17.42.1:19531 -v /var/run/fleet.sock:/var/run/fleet.sock:rw -t -p 3001:3000 fic2/panamax-api:latest
+        ExecStart=/usr/bin/docker run --name=PMX_API --rm=true -v /var/panamax-data:/usr/src/app/db/mnt -v /var/run/docker.sock:/run/docker.sock:rw  -e JOURNAL_ENDPOINT=http://172.17.42.1:19531 -v /var/run/fleet.sock:/var/run/fleet.sock:rw -t -p 3001:3000 devmediafi/panamax-api:latest
         ExecStop=/usr/bin/docker stop PMX_API
         Restart=always
         [Install]
@@ -123,7 +123,7 @@ coreos:
         [Service]
         ExecStartPre=-/usr/bin/docker kill PMX_UI
         ExecStartPre=-/usr/bin/docker rm -f PMX_UI
-        ExecStart=/usr/bin/docker run --name=PMX_UI --rm=true -v /var/run/docker.sock:/run/docker.sock:rw --link=PMX_API:PMX_API --link=PMX_CADVISOR:PMX_CADVISOR -e 3000 -p 3000:3000  fic2/panamax-ui:latest
+        ExecStart=/usr/bin/docker run --name=PMX_UI --rm=true -v /var/run/docker.sock:/run/docker.sock:rw --link=PMX_API:PMX_API --link=PMX_CADVISOR:PMX_CADVISOR -e 3000 -p 3000:3000  devmediafi/panamax-ui:latest
         ExecStop=/usr/bin/docker stop PMX_UI
         Restart=always
         [Install]

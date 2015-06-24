@@ -21,9 +21,9 @@ function loop {
 
 loop images ''
 
-loop pull fic2/panamax-ui
+loop pull devmediafi/panamax-ui
 loop pull google/cadvisor:latest
-loop pull fic2/panamax-api
+loop pull devmediafi/panamax-api
 loop pull cgeoffroy/nginx-auto_cert
 loop pull fic2/ppnet
 loop pull mysql
