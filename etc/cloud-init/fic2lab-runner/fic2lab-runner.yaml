@@ -85,7 +85,7 @@ write_files:
       },
 
       "coreos": {
-        "imageId": "510259ec-b196-4b57-9260-130462128cc2",
+        "imageId": "b46e5ad3-d9c2-45a7-ac97-c8593ca0a9a6",
         "panamax_before_607_and_journalfix_imageId": "8cf7c79a-89e7-40ed-ab99-1f2269d881c0"
       }}
 
