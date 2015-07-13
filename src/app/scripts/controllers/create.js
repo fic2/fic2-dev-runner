@@ -181,7 +181,7 @@ angular.module('srcApp')
         };
 
         var addingSecurityGroupRules = function(groupId){
-	        var ports = [[80], [8080], [22], [443], [3000], [3001], [3002], [6002], [6001], [8000], [49000, 52000]];
+	        var ports = [[80], [8080], [22], [443], [3000], [3001], [3002], [6002], [6001], [8000], [32000, 61000]];
 	        var promises = ports.map(
 	          function(port){
                     var portFrom = port[0];
