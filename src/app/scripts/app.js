@@ -43,7 +43,9 @@ angular
     'srcApp', [
       'ngResource',
       'ngRoute',
-      'oauth'
+      'oauth',
+      'angulartics',
+      'angulartics.google.analytics'
     ])
   .factory(
     'loginRequiredFactory',
