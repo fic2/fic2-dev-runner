@@ -14,7 +14,7 @@
 angular.module('srcApp')
   .controller(
 	  'CreateCtrl',
-	  function ($scope, $rootScope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, loginRequired, os, coreos, panamaxFactory, panamaxUiFactory, regionSetupFactory) {
+	  function ($scope, $rootScope, $q, $resource, $routeParams, $timeout, $location, $analytics, APP_CONFIG, loginRequired, os, coreos, panamaxFactory, panamaxUiFactory, regionSetupFactory) {
 
       $scope.targetSeName = $routeParams.seKeyName;
       $scope.failure = 'An error occured';
@@ -684,6 +684,8 @@ angular.module('srcApp')
 	//.then(wrap('Starting the SE\'s template', launchTemplate))
 	  .then(
 	    function() {
+              $analytics.eventTrack('successful creation',
+                                    { category: 'Workflow'});
 	      //debugger; // jshint ignore: line
 	      $scope.success_target_url = 'http://' + $scope.floatingIp.ip + ':3000/search/new';
 	      $scope.success = 'Panamax should be up & accessible (' + $scope.success_target_url + ')';
@@ -691,6 +693,10 @@ angular.module('srcApp')
 	    })
 	  .catch(
 	    function(cause){
+              $analytics.eventTrack('failed creation',
+                                    { category: 'Workflow',
+                                      label: ('body' in cause ? JSON.stringify(cause.body) : JSON.stringify(cause))
+                                    });
 	      $scope.cause = cause;
 	      angular.element('#failure-dialog_button').trigger('click');
 	      console.error(cause);

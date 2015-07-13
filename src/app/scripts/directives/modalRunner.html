@@ -40,7 +40,7 @@
       <div class="modal-footer">
         <!-- <button class="btn btn-primary" data-dismiss="modal">Dismiss</button> -->
 	<a href="/" class="btn btn-xs btn-primary" ng-click="close_modal()">Go back to the main index</a>
-	<a ng-If="success_target_url"  href="{{success_target_url}}" class="btn btn-lg btn-success">Go to your Panamax</a>
+	<a ng-If="success_target_url"  href="{{success_target_url}}" class="btn btn-lg btn-success" analytics-on="click" analytics-category="Content Actions" analytics-event="go to pnamax">Go to your Panamax</a>
       </div>
     </div>
   </div>

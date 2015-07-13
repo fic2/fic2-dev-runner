@@ -11,9 +11,12 @@
 				This page will help you build an unique and common instance to work with SEs. This instance will be created on your personal tenant. The creation process is fully automated and doesn't require any intervention.
       </p>
 			<button class="btn btn-primary"
-							ng-disabled="button"
-							ng-init="button=false"
-							ng-click="button=true; hide_events=false; create();">
+				ng-disabled="button"
+				ng-init="button=false"
+				ng-click="button=true; hide_events=false; create();"
+                                analytics-on="click" analytics-category="Content Actions"
+                                analytics-event="start env creation"
+                                >
 				<i class="mdi-av-play-circle-fill .icons-material"></i> Start creating your environment
 			</button>
 

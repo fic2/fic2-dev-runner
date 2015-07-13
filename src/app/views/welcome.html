@@ -38,7 +38,12 @@
     <div class="jumbotron" style="background-color: lightGreen">
       <h2>Run enablers on FIWARE Lab Cloud</h2>
       <i class="mdi-file-cloud big-icons"></i><br/>
-      <p><a href="/create" class="btn btn-success"><i class="mdi-av-play-circle-fill .icons-material"></i> GO!</a></p>
+      <p>
+        <a href="/create" class="btn btn-success" analytics-on="click"
+           analytics-event="go to creation page" analytics-category="Content Actions">
+          <i class="mdi-av-play-circle-fill .icons-material"></i> GO!
+        </a>
+      </p>
       <p>This will help you launch a hosting machine on your FIWARE Lab account.</p>
     </div>
   </div>
@@ -47,8 +52,14 @@
     <div class="jumbotron" style="background-color: lightBlue">
       <h2>Run enablers in your own machine</h2>
       <i class="mdi-hardware-computer big-icons"></i><br/>
-      <p><a href="http://fic2.github.io/runner/" class="btn btn-success" target="_blank"><i class="mdi-av-play-circle-fill .icons-material"></i> see instructions</a></p>
-      <p class="lead">Docker images are <a href="http://registry.hub.docker.com/repos/fic2/">publicly available</a>. Run them on your own machine.</p>
+      <p>
+        <a href="http://fic2.github.io/runner/" class="btn btn-success" target="_blank"
+           analytics-on="click" analytics-event="see instructions on fic2.github.io/runner"
+           analytics-category="Content Actions">
+          <i class="mdi-av-play-circle-fill .icons-material"></i> see instructions
+        </a>
+      </p>
+      <p class="lead">Docker images are <a href="http://registry.hub.docker.com/repos/fic2/" analytics-on="click" analytics-event="go to docker hub" analytics-category="Content Actions">publicly available</a>. Run them on your own machine.</p>
     </div>
   </div>
 </div>

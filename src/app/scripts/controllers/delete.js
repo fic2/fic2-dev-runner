@@ -14,7 +14,7 @@
 angular.module('srcApp')
   .controller(
     'DeleteCtrl',
-    function ($scope, $rootScope, $q, $resource, $routeParams, $timeout, $location, APP_CONFIG, loginRequired, os, hlos) {
+    function ($scope, $rootScope, $q, $resource, $routeParams, $timeout, $location, $analytics, APP_CONFIG, loginRequired, os, hlos) {
 
       $scope.targetSeName = $routeParams.seKeyName;
       $scope.failure = 'An error occured';
@@ -185,6 +185,8 @@ angular.module('srcApp')
           .then(wrap('Removing the network', tryToRemoveNetwork))
           .then(
             function() {
+              $analytics.eventTrack('successful deletion',
+                                    { category: 'Workflow'});
               //debugger; // jshint ignore: line
               $scope.success = 'Your environment has been deleted.';
               angular.element('#success-dialog_button').trigger('click');
@@ -195,6 +197,10 @@ angular.module('srcApp')
                 $scope.failure = cause.failure;
                 cause = cause.boxedCause;
               }
+              $analytics.eventTrack('failed deletion',
+                                    { category: 'Workflow',
+                                      label: ('body' in cause ? JSON.stringify(cause.body) : JSON.stringify(cause))
+                                    });
               $scope.cause = cause;
               angular.element('#failure-dialog_button').trigger('click');
               console.error(cause);

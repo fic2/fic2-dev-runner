@@ -13,7 +13,10 @@
       <button class="btn btn-danger"
               ng-disabled="button"
               ng-init="button=false"
-              ng-click="button=true; hide_events=false; deletion();">
+              ng-click="button=true; hide_events=false; deletion();"
+              analytics-on="click" analytics-category="Content Actions"
+              analytics-event="start deletion"
+              >
         <i class="mdi-av-play-circle-fill .icons-material"></i> Start deletion
       </button>
       <br/>

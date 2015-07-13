@@ -191,7 +191,7 @@ angular
         .otherwise({ redirectTo: '/welcome' });
     })
   .run(
-    function ($rootScope, $location, $resource, APP_CONFIG, Endpoint, $sessionStorage) {
+    function ($rootScope, $location, $resource, $analytics, APP_CONFIG, Endpoint, $sessionStorage) {
       $rootScope.OAuthConfig = APP_CONFIG;
 
       $rootScope.$on("$routeChangeError", 
@@ -199,6 +199,8 @@ angular
                        console.log(event, current, previous, rejection);
                        if (rejection === 'Not logged') {
                          $sessionStorage.target = current;
+                         $analytics.eventTrack('redirecting to fic2lab',
+                                               { category: 'OAuth', label: 'Not logged' });
                          Endpoint.redirect();
                        }
                      });
