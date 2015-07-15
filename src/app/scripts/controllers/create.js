@@ -498,7 +498,7 @@ angular.module('srcApp')
         };
 
         var injectTemplatesRepo = function() {
-	        var name = 'tai-lab/fic2-poc-templates_pmx';
+	        var name = 'fic2/fic2-panamax-templates_pmx';
 	        var get = function() {
 	          return $scope.panamax.sources.findByName(name);
 	        };
