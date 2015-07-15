@@ -65,7 +65,10 @@ angular.module('srcApp')
 	      ].concat(buildNginxServerConf(6001, 'up_panamax_api'))
               .concat(buildNginxServerConf(6002, 'up_panamax_ui'))
               .join('\n')
-	    }
+	    }// ,
+            // { path: '/etc/sysctl.d/99_networking.conf',
+            //   content: 'net.ipv4.ip_local_port_range = 49000 52000'
+            // }
 	  ],
 	  coreos: {
 	    update: {
