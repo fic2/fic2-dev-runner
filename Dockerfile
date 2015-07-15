@@ -1,6 +1,6 @@
 FROM node:0.10.35
 
-ENV VERSION='v0.0.3'
+ENV VERSION='v0.0.4'
 
 WORKDIR /root
 
